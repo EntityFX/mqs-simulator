@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="profiles\telemetry.json" />
+    <Content Remove="profiles\test.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="profiles\telemetry.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="profiles\test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EntityFX.IotSimulator.Common\EntityFX.IotSimulator.Common.csproj" />
+  </ItemGroup>
+
+</Project>

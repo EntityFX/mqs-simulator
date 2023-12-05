@@ -1,0 +1,68 @@
+{
+  "connectionStrings": {
+  },
+  "telemetrySender": {
+    "_types": [ "AzureSignalR", "SignalR", "Http", "AzureIotHub", "AzureIotCenter", "FileSystem", "Plugin" ],
+    "type": "Mqtt",
+    "Mqtt": {
+      "Server": "10.10.167.22",
+      "Port": 5883,
+      "Topic": "test",
+      "_SslProtocol": "Tls12",
+      "QOS": 1
+    }
+  },
+  "telemetryGenerator": {
+    "properties": {
+      "a0": {
+        "type": "Number",
+        "enum": [ 11, 22, 33 ],
+        "isTwoWay": true
+      },
+      "a1": {
+        "type": "Number",
+        "enum": [ 1, 2, 3, 5 ],
+        "useNull": true,
+        "isTwoWay": true,
+        "random": false
+      },
+      "b1": {
+        "type": "Number",
+        "format": "{0,3:000}",
+        "sequence": {
+          "from": 3,
+          "to": 7,
+          "isDouble": false
+        },
+        "isTwoWay": true,
+        "random": false,
+        "useNull": true
+      },
+      "currentLocation": {
+        "type": "GeoLocation",
+        "isTwoWay": true,
+        "geoEnum": [
+          {
+            "lat": 11.11,
+            "lon": 11.11
+          },
+          {
+            "lat": 22.22,
+            "lon": 22.22
+          },
+          {
+            "lat": 33.33,
+            "lon": 33.33
+          }
+        ]
+      }
+
+    }
+  },
+  "telemetrySerializer": {
+    "type": "JSON",
+    "indented": true,
+    "camelCase": true
+  },
+  "sendPeriod": "00:00:01"
+}
