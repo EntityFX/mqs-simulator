@@ -5,10 +5,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Runtime;
 
 namespace EntityFX.IotSimulator.Common
 {
-
 
     public class TelemetrySerializerBuilder : BuilderBase<ITelemetrySerializer>, IBuilder<ITelemetrySerializer>
     {

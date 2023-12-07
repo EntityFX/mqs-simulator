@@ -57,7 +57,8 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
                 managedMqttClient = await BuildMqttClientAndConnectAsync();
             }
 
-            await managedMqttClient.PublishAsync(mqttMessage, CancellationToken.None); // Since 3.0.5 with CancellationToken
+            await managedMqttClient.PublishAsync(mqttMessage, CancellationToken.None)
+                .ConfigureAwait(false); // Since 3.0.5 with CancellationToken
 
             if (telemetry is string stringTelemetry)
             {
@@ -67,9 +68,6 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
             {
                 logger.LogInformation(JsonSerializer.Serialize(telemetry, JsonSerializerOptions));
             }
-
-
-            await Task.CompletedTask;
         }
 
         private async Task<IManagedMqttClient> BuildMqttClientAndConnectAsync()
