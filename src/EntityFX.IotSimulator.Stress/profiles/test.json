@@ -5,11 +5,11 @@
     "_types": [ "AzureSignalR", "SignalR", "Http", "AzureIotHub", "AzureIotCenter", "FileSystem", "Plugin" ],
     "type": "Mqtt",
     "Mqtt": {
-      "Server": "10.10.167.22",
-      "Port": 5883,
+      "Server": "10.10.166.28",
+      "Port": 9889,
       "Topic": "test",
       "_SslProtocol": "Tls12",
-      "QOS": 0
+      "QOS": 1
     }
   },
   "telemetryGenerator": {
