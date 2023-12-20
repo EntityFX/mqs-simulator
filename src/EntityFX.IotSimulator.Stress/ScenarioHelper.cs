@@ -7,32 +7,10 @@ using MQTTnet.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reactive;
 
 static class ScenarioHelper
 {
-    public static async Task BuildMqttClientPool(
-        ClientPool<(ITelemetryGenerator Generator, IMqttClient mqttClient)> clientPool, 
-        int clientsCount,
-        BuilderFactory builderFactory,
-        string server, int port)
-    {
-        var mqttFactory = new MqttFactory();
-
-        for (int i = 0; i < clientsCount; i++)
-        {
-            var mqttClient = mqttFactory.CreateMqttClient();
-
-            var mqttClientOptions = new MqttClientOptionsBuilder()
-                .WithTcpServer(server, port)
-                .Build();
-
-            await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
-
-            var generator = builderFactory.GetGeneratorBuilder().Build();
-            clientPool.AddClient((generator, mqttClient));
-        }
-    }
-
     public static IConfiguration InitConfiguration(IHost host, string[] args)
     {
         var rootConfig = host.Services.GetRequiredService<IConfiguration>();
@@ -46,5 +24,24 @@ static class ScenarioHelper
         var config = configBuilder.Build();
 
         return config;
+    }
+
+    internal static async Task BuildMqttClientPool(ClientPool<(ITelemetryGenerator Generator, IMqttClient mqttClient)> clientPool, BuilderFactory builderFactory, MqttScenarioSettings settings)
+    {
+        var mqttFactory = new MqttFactory();
+
+        for (int i = 0; i < settings.ClientsCount; i++)
+        {
+            var mqttClient = mqttFactory.CreateMqttClient();
+
+            var mqttClientOptions = new MqttClientOptionsBuilder()
+                .WithTcpServer(settings.Server, settings.Port)
+                .Build();
+
+            await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+
+            var generator = builderFactory.GetGeneratorBuilder().Build();
+            clientPool.AddClient((generator, mqttClient));
+        }
     }
 }

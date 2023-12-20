@@ -9,15 +9,15 @@ using NBomber.CSharp;
 using MQTTnet.Client;
 using NBomber.Contracts;
 
-class MqttScenarioProprs
+class MqttScenarioBuilder
 {
     private readonly ClientPool<(ITelemetryGenerator Generator, IMqttClient mqttClient)> _clientPool;
     private readonly SimulatorSettings? _settings;
     private readonly BuilderFactory _builderFactory;
-    private readonly ILogger<MqttScenarioProprs> _logger;
+    private readonly ILogger<MqttScenarioBuilder> _logger;
 
-    public MqttScenarioProprs(
-        ILogger<MqttScenarioProprs> logger,
+    public MqttScenarioBuilder(
+        ILogger<MqttScenarioBuilder> logger,
         IConfiguration configuration)
     {
         _logger = logger;
@@ -35,6 +35,8 @@ class MqttScenarioProprs
             var poolItem = _clientPool.GetClient(context.ScenarioInfo);
 
             var obj = poolItem.Generator.Value;
+
+            //context.ScenarioInfo.Cu
 
             var serializeStep = await Step.Run("serialize", context, () =>
             {
@@ -67,7 +69,12 @@ class MqttScenarioProprs
 
     private Task Init(IScenarioInitContext arg)
     {
-        return ScenarioHelper.BuildMqttClientPool(_clientPool, 50,
-        _builderFactory, _settings!.TelemetrySender.Mqtt.Server, _settings.TelemetrySender.Mqtt.Port ?? 1883);
+        var settings = arg.CustomSettings.Get<MqttScenarioSettings>()
+            ?? new MqttScenarioSettings("test", MQTTnet.Protocol.MqttQualityOfServiceLevel.AtMostOnce, 
+            _settings!.TelemetrySender.Mqtt.Server, _settings.TelemetrySender.Mqtt.Port ?? 1883, 50
+            );
+
+        return ScenarioHelper.BuildMqttClientPool(_clientPool,
+        _builderFactory, settings);
     }
 }

@@ -16,17 +16,18 @@ builder.Logging.ClearProviders();
 var host = builder.Build();
 
 var configuration = ScenarioHelper.InitConfiguration(host, args);
-var logger = host.Services.GetRequiredService<ILogger<MqttScenarioProprs>>();
+var logger = host.Services.GetRequiredService<ILogger<MqttScenarioBuilder>>();
 
 
 InfluxDBSink influxDbSink = new();
-var scenario1 = new MqttScenarioProprs(logger, configuration);
+var scenario1 = new MqttScenarioBuilder(logger, configuration);
+var scenario2 = new MqttScenarioBuilder(logger, configuration);
 
 
 NBomberRunner
     .RegisterScenarios(
         scenario1.Build("serialize_publish_qos0"),
-        scenario1.Build("serialize_publish_qos1")
+        scenario2.Build("serialize_publish_qos1")
     )
     .LoadInfraConfig("config.json")
     .LoadConfig("config.json")
