@@ -1,6 +1,7 @@
 ﻿using EntityFX.IotSimulator.Engine.TelemetrySender;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
             this.logger = logger;
         }
 
-        public async Task SendAsync(object telemetry)
+        public async Task SendAsync(Dictionary<string, object> telemetry, object serialized)
         {
             File.WriteAllText(string.Format("{0:yyyyMMddTHHmmss}-{1}.json", DateTime.Now, Guid.NewGuid()), JsonSerializer.Serialize(telemetry));
             await Task.CompletedTask;

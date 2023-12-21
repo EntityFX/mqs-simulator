@@ -9,7 +9,7 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
         TTypeEnum Type { get; set; }
     }
 
-    public interface IPropertyGenerator : ITelemetryGenerator
+    public interface IPropertyGenerator : IValueGenerator
     {
         string Name { get; set; }
         string Format { get; set; }

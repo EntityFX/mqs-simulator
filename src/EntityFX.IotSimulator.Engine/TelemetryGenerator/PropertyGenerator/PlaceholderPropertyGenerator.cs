@@ -16,7 +16,8 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 
         private const string PlaceholderRegexString = @"{{\s*(\w+)\s*}}";
 
-        public PlaceholderPropertyGenerator(string name, IEnumerable<IPropertyGenerator> propertyGenerators, string template) : base(name, null)
+        public PlaceholderPropertyGenerator(string name, IEnumerable<IPropertyGenerator> propertyGenerators, string template, Dictionary<string, object> variables) : 
+            base(name, null, variables)
         {
             PropertyGenerators = propertyGenerators;
             Template = template;

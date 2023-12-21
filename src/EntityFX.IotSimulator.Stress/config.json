@@ -16,8 +16,7 @@
   "TestSuite": "entityfx.org",
   "TestName": "test_mqtt_load",
   "TargetScenarios": [
-    "serialize_publish_qos0",
-    "serialize_publish_qos1"
+    "serialize_publish_qos0"
    ],
   "GlobalSettings": {
     "ScenariosSettings": [
@@ -26,15 +25,17 @@
         "_WarmUpDuration": "00:00:00",
 
         "LoadSimulationsSettings": [
-          { "RampingConstant": [ 5, "00:01:00" ] },
-          { "KeepConstant": [ 5, "00:01:00" ] },
+          { "RampingConstant": [ 50, "00:01:00" ] },
+          { "KeepConstant": [ 50, "00:01:00" ] },
           { "RampingConstant": [ 0, "00:01:00" ] }
         ],
 
         "CustomSettings": {
           "topic": "test/qos0",
           "qos": 0,
-          "clients": 50
+          "clientsCount": 50,
+          "server": "10.10.166.28",
+          "port": 1883
         },
 
         "MaxFailCount": 500
@@ -48,10 +49,13 @@
           { "KeepConstant": [ 5, "00:01:00" ] },
           { "RampingConstant": [ 1, "00:01:00" ] }
         ],
-
+        "CustomSettings": null,
         "MqttSettings": {
           "topic": "test/qos1",
-          "qos": 1
+          "qos": 1,
+          "clientsCount": 50,
+          "server": "10.10.166.28",
+          "port": 1883
         },
 
         "MaxFailCount": 500

@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using EntityFX.IotSimulator.Engine.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace EntityFX.IotSimulator.Engine.TelemetrySender
+namespace EntityFX.IotSimulator.Engine.TelemetrySender.Builder
 {
     public class StubTelemetrySenderBuilder : BuilderBase<ITelemetrySender>, IBuilder<ITelemetrySender>
     {
@@ -15,7 +16,7 @@ namespace EntityFX.IotSimulator.Engine.TelemetrySender
 
         public class StubTelemetrySender : ITelemetrySender
         {
-            public Task SendAsync(object telemetry)
+            public Task SendAsync(Dictionary<string, object> telemetry, object serialized)
             {
                 Console.WriteLine("StubTelemetrySender Send");
                 return Task.FromResult(nameof(StubTelemetrySender));

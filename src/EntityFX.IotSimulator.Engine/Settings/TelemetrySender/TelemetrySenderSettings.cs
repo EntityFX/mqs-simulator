@@ -1,7 +1,5 @@
-﻿namespace EntityFX.IotSimulator.Engine
+﻿namespace EntityFX.IotSimulator.Engine.Settings.TelemetrySender
 {
-
-
     public class TelemetrySenderSettings
     {
         public TelemetrySenderType Type { get; set; }

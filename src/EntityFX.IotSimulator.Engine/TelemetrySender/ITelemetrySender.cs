@@ -7,6 +7,6 @@ namespace EntityFX.IotSimulator.Engine.TelemetrySender
 {
     public interface ITelemetrySender
     {
-        Task SendAsync(object telemetry);
+        Task SendAsync(Dictionary<string, object> telemetry, object serialized);
     }
 }

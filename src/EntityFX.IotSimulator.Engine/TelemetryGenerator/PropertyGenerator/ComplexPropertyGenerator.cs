@@ -7,7 +7,8 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 {
     public class ComplexPropertyGenerator : ComplexPropertyGenerator<object, Enum>
     {
-        public ComplexPropertyGenerator(string name, IEnumerable<IPropertyGenerator> propertyGenerators) : base(name, default(Enum), propertyGenerators)
+        public ComplexPropertyGenerator(string name, IEnumerable<IPropertyGenerator> propertyGenerators, Dictionary<string, object> variables) 
+            : base(name, default(Enum), propertyGenerators, variables)
         {
             PropertyGenerators = propertyGenerators;
         }
@@ -21,7 +22,8 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
     {
         public IEnumerable<IPropertyGenerator> PropertyGenerators { get; set; }
 
-        public ComplexPropertyGenerator(string name, TTypeEnum type, IEnumerable<IPropertyGenerator> propertyGenerators) : base(name, type)
+        public ComplexPropertyGenerator(string name, TTypeEnum type, IEnumerable<IPropertyGenerator> propertyGenerators, 
+            Dictionary<string, object> variables) : base(name, type, variables)
         {
             PropertyGenerators = propertyGenerators;
         }

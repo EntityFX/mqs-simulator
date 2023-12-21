@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Enums;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 {
@@ -41,6 +44,12 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 
         private INullable nullable;
 
+        public NumberGenerator(string name, NumberType type, Dictionary<string, object> variables)
+            : base(name, type, variables)
+        {
+            nullable = Enum;
+        }
+
         public bool WithNull
         {
             get => nullable?.WithNull ?? false; set => nullable.WithNull = value;
@@ -49,47 +58,5 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
         public bool IsRandom { get => Enum.IsRandom; set => Enum.IsRandom = value; }
 
         public bool IsTwoWay { get => Enum.IsTwoWay; set => Enum.IsTwoWay = value; }
-
-
-
-        public NumberGenerator(string name, NumberType numberType, bool withNull = false)
-            : base(name, numberType)
-        {
-            WithNull = withNull;
-        }
-
-        public NumberGenerator(string name, decimal? constant)
-            : base(name, NumberType.Constant)
-        {
-            ConstantValue = constant;
-        }
-
-        public NumberGenerator(string name, NumberSequence sequence, bool withNull = false)
-            : base(name, NumberType.Sequece)
-        {
-            Sequence = sequence;
-            nullable = Sequence;
-            WithNull = withNull;
-        }
-
-        public NumberGenerator(string name, EnumValues<decimal?> @enum, bool isRandom = false,
-            bool withNull = false,
-            bool isTwoWay = false)
-            : base(name, NumberType.Enum)
-        {
-            Enum = @enum;
-            nullable = Enum;
-            IsRandom = isRandom;
-            WithNull = withNull;
-            IsTwoWay = isTwoWay;
-        }
-
-        public NumberGenerator(string name, RandomRange random, bool withNull = false)
-            : base(name, NumberType.Random)
-        {
-            Random = random;
-            nullable = Random;
-            WithNull = withNull;
-        }
     }
 }

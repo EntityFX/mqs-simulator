@@ -8,10 +8,12 @@ using NBomber;
 using NBomber.CSharp;
 using MQTTnet.Client;
 using NBomber.Contracts;
+using EntityFX.IotSimulator.Engine.Settings;
+using EntityFX.IotSimulator.Engine.Builder;
 
 class MqttScenarioBuilder
 {
-    private readonly ClientPool<(ITelemetryGenerator Generator, IMqttClient mqttClient)> _clientPool;
+    private readonly ClientPool<(IValueGenerator Generator, IMqttClient mqttClient, MqttScenarioSettings MqttScenarioSettings)> _clientPool;
     private readonly SimulatorSettings? _settings;
     private readonly BuilderFactory _builderFactory;
     private readonly ILogger<MqttScenarioBuilder> _logger;
@@ -21,7 +23,7 @@ class MqttScenarioBuilder
         IConfiguration configuration)
     {
         _logger = logger;
-        _clientPool = new ClientPool<(ITelemetryGenerator Generator, IMqttClient mqttClient)>();
+        _clientPool = new ClientPool<(IValueGenerator Generator, IMqttClient mqttClient, MqttScenarioSettings MqttScenarioSettings)>();
         _settings = configuration.Get<SimulatorSettings>();
         _builderFactory = BuilderExtensions.WithDefault(logger, configuration, _settings); 
     }
@@ -43,8 +45,8 @@ class MqttScenarioBuilder
                 var serializedTelemetry = serializer.Serialize(obj).ToString();
 
                 var applicationMessage = new MqttApplicationMessageBuilder()
-                    .WithTopic(_settings!.TelemetrySender.Mqtt.Topic)
-                    .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtMostOnce)
+                    .WithTopic(poolItem.MqttScenarioSettings.Topic)
+                    .WithQualityOfServiceLevel(poolItem.MqttScenarioSettings.Qos)
                     .WithPayload(serializedTelemetry)
                     .Build();
 

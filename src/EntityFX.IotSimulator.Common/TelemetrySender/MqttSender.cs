@@ -1,10 +1,11 @@
-﻿using EntityFX.IotSimulator.Engine;
+﻿using EntityFX.IotSimulator.Engine.Settings.TelemetrySender;
 using EntityFX.IotSimulator.Engine.TelemetrySender;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Security;
@@ -12,6 +13,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,6 +29,9 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
 
         private readonly IMqttFactory mqttFactory;
 
+        private const string TopicRegexString = @"[^{\}]+(?=})";
+        private readonly Regex TopicRegex = new Regex(TopicRegexString);
+
         public MqttSender(ILogger logger, IMqttFactory mqttFactory, MqttSettings mqttSettings)
         {
             this.logger = logger;
@@ -40,34 +45,6 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
                 IncludeFields = true,
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             };
-        }
-
-        public async Task SendAsync(object telemetry)
-        {
-            var payload = Encoding.UTF8.GetBytes(telemetry.ToString());
-            var mqttMessage = new MqttApplicationMessageBuilder()
-            .WithTopic(mqttSettings.Topic)
-            .WithPayload(payload)
-            .WithQualityOfServiceLevel(mqttSettings.QOS)
-            .WithRetainFlag()
-            .Build();
-
-            if (managedMqttClient == null)
-            {
-                managedMqttClient = await BuildMqttClientAndConnectAsync();
-            }
-
-            await managedMqttClient.PublishAsync(mqttMessage, CancellationToken.None)
-                .ConfigureAwait(false); // Since 3.0.5 with CancellationToken
-
-            if (telemetry is string stringTelemetry)
-            {
-                logger.LogInformation(stringTelemetry);
-            }
-            else
-            {
-                logger.LogInformation(JsonSerializer.Serialize(telemetry, JsonSerializerOptions));
-            }
         }
 
         private async Task<IManagedMqttClient> BuildMqttClientAndConnectAsync()
@@ -155,6 +132,52 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
         private bool CertificateValidationCallback(X509Certificate arg1, X509Chain arg2, SslPolicyErrors arg3, IMqttClientOptions arg4)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task SendAsync(Dictionary<string, object> telemetry, object serialized)
+        {
+            var topic = BuildTopic(telemetry, mqttSettings.Topic);
+
+            var payload = Encoding.UTF8.GetBytes(serialized.ToString());
+            var mqttMessage = new MqttApplicationMessageBuilder()
+            .WithTopic(topic)
+            .WithPayload(payload)
+            .WithQualityOfServiceLevel(mqttSettings.QOS)
+            .WithRetainFlag()
+            .Build();
+
+            if (managedMqttClient == null)
+            {
+                managedMqttClient = await BuildMqttClientAndConnectAsync();
+            }
+
+            await managedMqttClient.PublishAsync(mqttMessage, CancellationToken.None); // Since 3.0.5 with CancellationToken
+
+            if (serialized is string stringTelemetry)
+            {
+                logger.LogInformation(stringTelemetry);
+            }
+            else
+            {
+                logger.LogInformation(JsonSerializer.Serialize(telemetry, JsonSerializerOptions));
+            }
+
+
+            await Task.CompletedTask;
+        }
+
+        private string BuildTopic(Dictionary<string, object> telemetry, string topic)
+        {
+            var matches = TopicRegex.Matches(topic);
+            foreach (var match in matches.OfType<Match>())
+            {
+                if (!telemetry.ContainsKey(match.Value))
+                {
+                    continue;
+                }
+                topic = topic.Replace($"{{{match.Value}}}", telemetry[match.Value].ToString());
+            }
+            return topic;
         }
     }
 }

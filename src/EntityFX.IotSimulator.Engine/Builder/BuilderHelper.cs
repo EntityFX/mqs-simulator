@@ -1,14 +1,24 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using EntityFX.IotSimulator.Engine.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace EntityFX.IotSimulator.Engine
+namespace EntityFX.IotSimulator.Engine.Builder
 {
     public static class BuilderHelper
     {
+        public static TBuilder GetBuilder<TBuilder, TType, TStubBuilder>(this IBuilder<TType> builder,
+            string assemblyName, string senderTypeName, ILogger logger, IConfiguration configuration, Dictionary<string, object> settings)
+            where TStubBuilder : IBuilder<TType>
+            where TBuilder : IBuilder<TType>
+        {
+            return (TBuilder)builder.GetBuilder<TType, TStubBuilder>(assemblyName, senderTypeName, logger, configuration, settings);
+        }
+
+
         public static IBuilder<TType> GetBuilder<TType, TStubBuilder>(this IBuilder<TType> builder,
             string assemblyName, string senderTypeName, ILogger logger, IConfiguration configuration, Dictionary<string, object> settings)
             where TStubBuilder : IBuilder<TType>
@@ -36,19 +46,19 @@ namespace EntityFX.IotSimulator.Engine
             {
                 return builder;
             }
-            return ((TStubBuilder)Activator.CreateInstance(typeof(TStubBuilder), logger, configuration));
+            return (TStubBuilder)Activator.CreateInstance(typeof(TStubBuilder), logger, configuration);
         }
 
-        public static TType Build<TType, TStubBuilder>(this IBuilder<TType> builder, 
+        public static TType Build<TType, TStubBuilder>(this IBuilder<TType> builder,
             string assemblyName, string senderTypeName, ILogger logger, IConfiguration configuration, Dictionary<string, object> settings)
             where TStubBuilder : IBuilder<TType>
         {
-            return GetBuilder<TType, TStubBuilder>(builder, assemblyName, senderTypeName, logger, configuration, settings).Build();
+            return builder.GetBuilder<TType, TStubBuilder>(assemblyName, senderTypeName, logger, configuration, settings).Build();
         }
 
         public static (string AssemblyName, string TypeName) GetDefaultAssemblyAndTypeName<TDefaultType>(PluginSettings pluginSettings)
         {
-            var typeName = pluginSettings?.SenderType ?? typeof(TDefaultType).Name;
+            var typeName = pluginSettings?.Type ?? typeof(TDefaultType).Name;
             var assemblyFile = pluginSettings?.Assembly ?? Assembly.GetAssembly(typeof(TDefaultType)).GetName().Name;
 
             return (assemblyFile, typeName);

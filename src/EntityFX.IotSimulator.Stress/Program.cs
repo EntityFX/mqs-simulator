@@ -26,8 +26,8 @@ var scenario2 = new MqttScenarioBuilder(logger, configuration);
 
 NBomberRunner
     .RegisterScenarios(
-        scenario1.Build("serialize_publish_qos0"),
-        scenario2.Build("serialize_publish_qos1")
+        scenario1.Build("serialize_publish_qos0")/*,
+        scenario2.Build("serialize_publish_qos1")*/
     )
     .LoadInfraConfig("config.json")
     .LoadConfig("config.json")

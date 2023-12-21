@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
-namespace EntityFX.IotSimulator.Engine
+namespace EntityFX.IotSimulator.Engine.Builder
 {
     public class Builder<TType, TStubBuilderType> : BuilderBase<TType>, IBuilder<TType>
         where TStubBuilderType : IBuilder<TType>
@@ -20,9 +20,15 @@ namespace EntityFX.IotSimulator.Engine
 
         public override TType Build()
         {
+            var builder = GetBuilder();
+            return builder.Build();
+        }
+
+        protected virtual IBuilder<TType> GetBuilder()
+        {
             var builder = this.GetBuilder<TType, TStubBuilderType>(
                 assemblyName, senderTypeName, logger, configuration, extraSettings);
-            return builder.Build();
+            return builder;
         }
     }
 }

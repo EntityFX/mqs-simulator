@@ -4,7 +4,7 @@ public class MqttScenarioSettings
 {
     public string Topic { get; set; }
 
-    public MqttScenarioSettings(string topic, MqttQualityOfServiceLevel qos, string server, int port, int clientsCount) : this(topic, qos)
+    public MqttScenarioSettings(string topic, MqttQualityOfServiceLevel qos, string server, int port, int clientsCount)
     {
         Server = server;
         Port = port;

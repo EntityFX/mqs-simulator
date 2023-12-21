@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 {
@@ -14,7 +15,7 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 
         public string Format { get; set; }
 
-        object ITelemetryGenerator.Value
+        object IValueGenerator.Value
         {
             get
             {
@@ -24,7 +25,7 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
                     lastValue = this.Value;
                     passedTicks = 0;
                 }
-                if (lastValue.Equals(default(T)))
+                if (lastValue != null && lastValue.Equals(default(T)))
                 {
                     lastValue = this.Value;
                 }
@@ -36,14 +37,16 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
         public T ConstantValue { get; set; }
 
         public TTypeEnum Type { get; set; }
+        public Dictionary<string, object> Variables { get; }
 
         public int PassTicks { get; set; } = 1;
 
 
-        public PropertyGenerator(string name, TTypeEnum type)
+        public PropertyGenerator(string name, TTypeEnum type, Dictionary<string, object> variables)
         {
             Name = name;
             Type = type;
+            Variables = variables;
         }
     }
 }

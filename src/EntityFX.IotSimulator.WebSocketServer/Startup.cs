@@ -1,5 +1,7 @@
 using EntityFX.IotSimulator.Common;
 using EntityFX.IotSimulator.Engine;
+using EntityFX.IotSimulator.Engine.Builder;
+using EntityFX.IotSimulator.Engine.Settings;
 using EntityFX.IotSimulator.Engine.TelemetryGenerator;
 using EntityFX.IotSimulator.Engine.TelemetrySender;
 using EntityFX.IotSimulator.Engine.TelemetrySerializer;

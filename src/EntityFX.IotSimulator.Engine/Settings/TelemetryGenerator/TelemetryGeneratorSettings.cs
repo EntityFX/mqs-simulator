@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace EntityFX.IotSimulator.Engine
+namespace EntityFX.IotSimulator.Engine.Settings.TelemetryGenerator
 {
     public class TelemetryGeneratorSettings
     {

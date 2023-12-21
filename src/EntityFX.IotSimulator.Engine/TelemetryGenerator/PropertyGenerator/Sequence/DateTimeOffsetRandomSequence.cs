@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
+namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence
 {
     public class DateTimeOffsetRandomSequence
     {
@@ -28,7 +28,7 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
                 _random.NextBytes(buf);
                 long longRand = BitConverter.ToInt64(buf, 0);
 
-                var unixSeconds = (Math.Abs(longRand % (from - to)) + from);
+                var unixSeconds = Math.Abs(longRand % (from - to)) + from;
                 return DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
             }
         }

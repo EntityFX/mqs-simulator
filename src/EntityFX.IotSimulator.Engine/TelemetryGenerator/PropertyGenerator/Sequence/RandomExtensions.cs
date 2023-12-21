@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EntityFX.IotSimulator.Engine
+namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence
 {
     public static class RandomExtensions
     {

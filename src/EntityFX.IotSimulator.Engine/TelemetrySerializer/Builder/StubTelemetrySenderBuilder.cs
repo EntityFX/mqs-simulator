@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using EntityFX.IotSimulator.Engine.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace EntityFX.IotSimulator.Engine.TelemetrySerializer
+namespace EntityFX.IotSimulator.Engine.TelemetrySerializer.Builder
 {
 
     public class StubTelemetrySenderBuilder : BuilderBase<ITelemetrySerializer>, IBuilder<ITelemetrySerializer>

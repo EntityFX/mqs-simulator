@@ -1,4 +1,4 @@
-﻿namespace EntityFX.IotSimulator.Engine
+﻿namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence
 {
     public interface IRandom
     {

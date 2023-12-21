@@ -1,7 +1,8 @@
-﻿using EntityFX.IotSimulator.Engine;
+﻿using EntityFX.IotSimulator.Engine.Settings.TelemetrySender;
 using EntityFX.IotSimulator.Engine.TelemetrySender;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -35,14 +36,11 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
 
         }
 
-        public async Task SendAsync(object telemetry)
+        public async Task SendAsync(Dictionary<string, object> telemetry, object serialized)
         {
+            var content = new StringContent(serialized.ToString(), Encoding.UTF8, "application/json");
 
-            var telemetryJson = JsonSerializer.Serialize(telemetry);
-
-            var content = new StringContent(telemetryJson.ToString(), Encoding.UTF8, "application/json");
-
-            if (httpSetings.Method == Engine.HttpMethod.Post)
+            if (httpSetings.Method == Engine.Settings.TelemetrySender.HttpMethod.Post)
             {
                 var response = await httpClient.PostAsync(path, content);
                 if (response.StatusCode != System.Net.HttpStatusCode.OK)
@@ -52,7 +50,7 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
                 return;
             }
 
-            if (httpSetings.Method == Engine.HttpMethod.Put)
+            if (httpSetings.Method == Engine.Settings.TelemetrySender.HttpMethod.Put)
             {
                 var response = await httpClient.PutAsync(path, content);
                 if (response.StatusCode != System.Net.HttpStatusCode.OK)

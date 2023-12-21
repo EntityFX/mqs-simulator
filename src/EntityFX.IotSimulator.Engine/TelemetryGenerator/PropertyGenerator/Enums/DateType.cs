@@ -1,4 +1,4 @@
-﻿namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
+﻿namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Enums
 {
     public enum DateType
     {

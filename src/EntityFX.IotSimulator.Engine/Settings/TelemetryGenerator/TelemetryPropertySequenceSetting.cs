@@ -1,4 +1,4 @@
-﻿namespace EntityFX.IotSimulator.Engine
+﻿namespace EntityFX.IotSimulator.Engine.Settings.TelemetryGenerator
 {
     public class TelemetryPropertySequenceSetting
     {
@@ -9,6 +9,6 @@
         public object Step { get; set; }
 
         public bool? IsDouble { get; set; }
-        
+
     }
 }

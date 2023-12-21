@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reactive;
+using EntityFX.IotSimulator.Engine.Builder;
 
 static class ScenarioHelper
 {
@@ -26,7 +27,9 @@ static class ScenarioHelper
         return config;
     }
 
-    internal static async Task BuildMqttClientPool(ClientPool<(ITelemetryGenerator Generator, IMqttClient mqttClient)> clientPool, BuilderFactory builderFactory, MqttScenarioSettings settings)
+    internal static async Task BuildMqttClientPool(
+        ClientPool<(IValueGenerator Generator, IMqttClient mqttClient, MqttScenarioSettings MqttScenarioSettings)> clientPool, 
+        BuilderFactory builderFactory, MqttScenarioSettings settings)
     {
         var mqttFactory = new MqttFactory();
 
@@ -41,7 +44,7 @@ static class ScenarioHelper
             await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
             var generator = builderFactory.GetGeneratorBuilder().Build();
-            clientPool.AddClient((generator, mqttClient));
+            clientPool.AddClient((generator, mqttClient, settings));
         }
     }
 }

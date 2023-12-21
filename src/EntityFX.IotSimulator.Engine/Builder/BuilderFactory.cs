@@ -1,13 +1,19 @@
-﻿using EntityFX.IotSimulator.Engine.TelemetryGenerator;
+﻿using EntityFX.IotSimulator.Engine.Settings;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.Builder;
 using EntityFX.IotSimulator.Engine.TelemetrySender;
+using EntityFX.IotSimulator.Engine.TelemetrySender.Builder;
 using EntityFX.IotSimulator.Engine.TelemetrySerializer;
+using EntityFX.IotSimulator.Engine.TelemetrySerializer.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace EntityFX.IotSimulator.Engine
+namespace EntityFX.IotSimulator.Engine.Builder
 {
+
     public class BuilderFactory : IBuilderFactory
     {
         private readonly ILogger logger;
@@ -17,7 +23,7 @@ namespace EntityFX.IotSimulator.Engine
         {
             this.logger = logger;
             this.configuration = configuration;
-            this.Settings = settings;
+            Settings = settings;
         }
 
         public Dictionary<string, object> Settings { get; }
@@ -30,10 +36,34 @@ namespace EntityFX.IotSimulator.Engine
                 new object[] { logger, configuration, Settings, builderAssemblyAndType.AssemblyName, builderAssemblyAndType.TypeName }) as TBuilderType;
         }
 
-        public IBuilder<ITelemetryGenerator> GetGeneratorBuilder()
+        public ITelemetryGeneratorBuilder GetGeneratorBuilder()
         {
             var generatorAsmType = ((string, string))Settings["generatorAsmType"];
-            return GetBuilder<RootTelemetryGeneratorBuilder, ITelemetryGenerator>(generatorAsmType);
+            var builder = GetBuilder<RootTelemetryGeneratorBuilder, IValueGenerator>(generatorAsmType);
+            return builder as ITelemetryGeneratorBuilder;
+        }
+
+        public IEnumerable<Simulator> BuildSimulators(InstanceSettings instanceSettings)
+        {
+            var count = instanceSettings?.Count ?? 1;
+
+            return Enumerable.Range(1, count).Select(instance =>
+            {
+                var context = new Dictionary<string, object>();
+
+                var simulatorId = instanceSettings.Name.Replace("{simulatorId}", instance.ToString());
+                context["simulatorId"] = simulatorId;
+
+                var generator = GetGeneratorBuilder()
+                                .WithVariables(context)
+                                .Build();
+
+                var telemetrySender = GetSenderBuilder().Build();
+
+                var serializer = GetSerializerBuilder().Build();
+
+                return new Simulator(logger, context, generator, serializer, telemetrySender);
+            }).ToArray();
         }
 
         public IBuilder<ITelemetrySender> GetSenderBuilder()

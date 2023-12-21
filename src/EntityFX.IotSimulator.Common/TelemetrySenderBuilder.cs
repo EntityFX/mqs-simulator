@@ -1,7 +1,8 @@
 ﻿using EntityFX.IotSimulator.Common.TelemetrySender;
 using EntityFX.IotSimulator.Engine;
+using EntityFX.IotSimulator.Engine.Builder;
+using EntityFX.IotSimulator.Engine.Settings.TelemetrySender;
 using EntityFX.IotSimulator.Engine.TelemetrySender;
-using EntityFX.IotSimulator.TelemetrySender;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MQTTnet;

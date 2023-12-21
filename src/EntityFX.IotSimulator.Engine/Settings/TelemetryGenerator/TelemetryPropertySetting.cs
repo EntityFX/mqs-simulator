@@ -1,7 +1,7 @@
 ﻿using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator;
 using System.Collections.Generic;
 
-namespace EntityFX.IotSimulator.Engine
+namespace EntityFX.IotSimulator.Engine.Settings.TelemetryGenerator
 {
     public class TelemetryPropertySetting
     {
@@ -20,6 +20,8 @@ namespace EntityFX.IotSimulator.Engine
         public TelemetryPropertySequenceSetting AltRandomSequence { get; set; }
 
         public string[] Enum { get; set; }
+
+        public string Placeholder { get; set; }
 
         public GeoLocationValue[] GeoEnum { get; set; }
 

@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using EntityFX.IotSimulator.Engine.TelemetryGenerator.Builder;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Enums;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -25,41 +28,85 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
         public bool IsTwoWay { get; set; }
 
 
-        public GeoLocationPropertyGenerator(string name, GeoLocationValue constant)
+        public GeoLocationPropertyGenerator(string name, GeoLocationValue constant, Dictionary<string, object> variables)
          : base(name, GeoLocationType.Constant, new IPropertyGenerator[]
             {
-                new NumberGenerator("Lat", constant.Lat) ,
-                new NumberGenerator("Lon", constant.Lon),
-                new NumberGenerator("Alt", constant.Alt),
-            })
+                new NumberGeneratorBuilder()
+                    .WithName("Lat")
+                    .WithConstant(constant.Lat)
+                    .WithVariables(variables)
+                    .Build(),
+                new NumberGeneratorBuilder()
+                    .WithName("Lon")
+                    .WithConstant(constant.Lon)
+                    .WithVariables(variables)
+                    .Build(),
+                new NumberGeneratorBuilder()
+                    .WithName("Alt")
+                    .WithConstant(constant.Alt)
+                    .WithVariables(variables)
+                    .Build()
+            }, variables)
         {
         }
-        
-        public GeoLocationPropertyGenerator(string name, EnumValues<decimal?> lat, EnumValues<decimal?> lon, EnumValues<decimal?> alt, bool isTwoWay = false)
+
+        public GeoLocationPropertyGenerator(string name, EnumValues<decimal?> lat, EnumValues<decimal?> lon,
+            EnumValues<decimal?> alt, Dictionary<string, object> variables, bool isTwoWay = false)
             : base(name, GeoLocationType.Enum, new IPropertyGenerator[]
             {
-                        new NumberGenerator("Lat", lat, false, false, isTwoWay) ,
-                        new NumberGenerator("Lon", lon, false, false, isTwoWay),
-                        new NumberGenerator("Alt", alt, false, false, isTwoWay)
-            })
+                new NumberGeneratorBuilder()
+                    .WithName("Lat")
+                    .WithEnumValue(lat)
+                    .WithTwoWay(isTwoWay)
+                    .WithVariables(variables)
+                    .Build() ,
+                new NumberGeneratorBuilder()
+                    .WithName("Lon")
+                    .WithEnumValue(lon)
+                    .WithTwoWay(isTwoWay)
+                    .WithVariables(variables)
+                    .Build() ,
+                new NumberGeneratorBuilder()
+                    .WithName("Alt")
+                    .WithEnumValue(alt)
+                    .WithTwoWay(isTwoWay)
+                    .WithVariables(variables)
+                    .Build()
+            }, variables)
         {
             IsTwoWay = true;
         }
 
 
-        public GeoLocationPropertyGenerator(string name, GeoLocationType type, RandomRange latRange, RandomRange lonRange, RandomRange altRange, int? roundDecimals = null)
+        public GeoLocationPropertyGenerator(string name, GeoLocationType type, RandomRange latRange, RandomRange lonRange,
+            RandomRange altRange, Dictionary<string, object> variables, int? roundDecimals = null)
             : base(name, type, new IPropertyGenerator[]
             {
-                new NumberGenerator("Lat", latRange != null
-                    ? latRange
-                    : new RandomRange(true) { From = -90.0m, To = 90.0m}) { RoundDecimals = roundDecimals },
-                new NumberGenerator("Lon", lonRange != null
-                    ? lonRange
-                    : new RandomRange(true) { From = -180.0m, To = 180.0m}) { RoundDecimals = roundDecimals },
-                new NumberGenerator("Alt", altRange != null
-                    ? altRange
-                    : new RandomRange(true) { From = -50m, To = 50.0m}) { RoundDecimals = roundDecimals },
-            })
+                new NumberGeneratorBuilder()
+                    .WithName("Lat")
+                    .WithRandomRange(latRange != null
+                        ? latRange
+                        : new RandomRange(true) { From = -90.0m, To = 90.0m})
+                    .WithRoundDecimals(roundDecimals)
+                    .WithVariables(variables)
+                    .Build(),
+                new NumberGeneratorBuilder()
+                    .WithName("Lon")
+                    .WithRandomRange(lonRange != null
+                        ? lonRange
+                        : new RandomRange(true) { From = -180.0m, To = 180.0m})
+                    .WithRoundDecimals(roundDecimals)
+                    .WithVariables(variables)
+                    .Build(),
+                new NumberGeneratorBuilder()
+                    .WithName("Alt")
+                    .WithRandomRange(altRange != null
+                        ? altRange
+                        : new RandomRange(true) { From = -50m, To = 50.0m})
+                    .WithRoundDecimals(roundDecimals)
+                    .WithVariables(variables)
+                    .Build()
+            }, variables)
         {
 
         }

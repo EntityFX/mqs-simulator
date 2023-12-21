@@ -1,4 +1,4 @@
-﻿namespace EntityFX.IotSimulator.Engine
+﻿namespace EntityFX.IotSimulator.Engine.Settings.TelemetrySerializer
 {
     public class TelemetrySerializerSettings
     {

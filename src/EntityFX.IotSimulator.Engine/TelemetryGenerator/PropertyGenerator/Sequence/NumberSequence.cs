@@ -1,4 +1,4 @@
-﻿namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
+﻿namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence
 {
 
 
@@ -40,7 +40,8 @@
                     {
                         _curent = From;
                     }
-                } else
+                }
+                else
                 {
                     if (To != null && _curent >= To.Value)
                     {

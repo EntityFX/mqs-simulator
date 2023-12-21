@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
-namespace EntityFX.IotSimulator.Engine
+namespace EntityFX.IotSimulator.Engine.Builder
 {
     public abstract class BuilderBase<TType> : IBuilder<TType>
     {

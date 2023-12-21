@@ -1,4 +1,6 @@
 ﻿using EntityFX.IotSimulator.Engine;
+using EntityFX.IotSimulator.Engine.Builder;
+using EntityFX.IotSimulator.Engine.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;

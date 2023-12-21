@@ -1,36 +1,15 @@
-﻿using System;
+﻿using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Enums;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence;
+using System;
+using System.Collections.Generic;
 
 namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 {
     public class TimestampGenerator : PropertyGenerator<long?, DateType>
     {
-        public TimestampGenerator(string name, DateType type) : base(name, type)
+        public TimestampGenerator(string name, DateType type, Dictionary<string, object> variables) 
+            : base(name, type, variables)
         {
-        }
-
-        public TimestampGenerator(string name, long? constant)
-            : base(name, DateType.Constant)
-        {
-            ConstantValue = constant;
-        }
-
-        public TimestampGenerator(string name, NumberSequence sequence)
-            : base(name, DateType.Sequece)
-        {
-            Sequence = sequence;
-        }
-
-        public TimestampGenerator(string name, EnumValues<long> @enum, bool isRandom = true)
-            : base(name, DateType.Enum)
-        {
-            Enum = @enum;
-            Enum.IsRandom = isRandom;
-        }
-
-        public TimestampGenerator(string name, RandomRange random)
-            : base(name, DateType.Random)
-        {
-            Random = random;
         }
 
         public NumberSequence Sequence { get; set; }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Enums;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence;
+using System;
+using System.Collections.Generic;
 
 namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 {
@@ -6,26 +9,15 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
     {
         public EnumValues<string> Enum { get; set; }
 
+        public string Placeholder { get; set; }
+
         public bool WithNull { get => Enum.WithNull; set => Enum.WithNull = value; }
 
         public bool IsRandom { get => Enum.IsRandom; set => Enum.IsRandom = value; }
 
-        public StringGenerator(string name, StringType type) : base(name, type)
+        public StringGenerator(string name, StringType type, Dictionary<string, object> variables) 
+            : base(name, type, variables)
         {
-        }
-
-        public StringGenerator(string name, string constant)
-            : base(name, StringType.Constant)
-        {
-            ConstantValue = constant;
-        }
-
-        public StringGenerator(string name, EnumValues<string> @enum, bool isRandom = true, bool withNull = false)
-            : base(name, StringType.Enum)
-        {
-            Enum = @enum;
-            IsRandom = isRandom;
-            WithNull = withNull;
         }
 
         public override string Value
@@ -40,11 +32,23 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
                         return Enum.Value;
                     case StringType.Guid:
                         return Guid.NewGuid().ToString();
+                    case StringType.Placeholder:
+                        return Replace();
                     default:
                         break;
                 }
                 return "";
             }
+        }
+
+        private string Replace()
+        {
+            var result = Placeholder;
+            foreach (var variable in Variables)
+            {
+                result = result.Replace($"{{{variable.Key}}}", variable.Value.ToString());
+            }
+            return result;
         }
     }
 }

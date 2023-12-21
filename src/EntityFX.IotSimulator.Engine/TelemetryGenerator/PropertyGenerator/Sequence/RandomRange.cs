@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
+namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence
 {
 
     public class RandomRange : INullable

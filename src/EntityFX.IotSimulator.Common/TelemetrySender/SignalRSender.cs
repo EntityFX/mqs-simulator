@@ -1,7 +1,9 @@
-﻿using EntityFX.IotSimulator.Engine;
+﻿using EntityFX.IotSimulator.Engine.Settings.TelemetrySender;
 using EntityFX.IotSimulator.Engine.TelemetrySender;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace EntityFX.IotSimulator.Common.TelemetrySender
@@ -41,10 +43,10 @@ namespace EntityFX.IotSimulator.Common.TelemetrySender
             return System.Threading.Tasks.Task.CompletedTask;
         }
 
-        public async Task SendAsync(object telemetry)
+        public async Task SendAsync(Dictionary<string, object> telemetry, object serialized)
         {
             await connection.InvokeAsync(signalRSettings.Method,
-                telemetry);
+                serialized);
         }
     }
 }

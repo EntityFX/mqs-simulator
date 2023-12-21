@@ -1,9 +1,10 @@
 ﻿using EntityFX.IotSimulator.Engine.TelemetrySender;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace EntityFX.IotSimulator.TelemetrySender
+namespace EntityFX.IotSimulator.Common.TelemetrySender
 {
     public class LoggerSender : ITelemetrySender
     {
@@ -24,9 +25,9 @@ namespace EntityFX.IotSimulator.TelemetrySender
             };
         }
 
-        public async Task SendAsync(object telemetry)
+        public async Task SendAsync(Dictionary<string, object> telemetry, object serialized)
         {
-            if (telemetry is string stringTelemetry)
+            if (serialized is string stringTelemetry)
             {
                 logger.LogInformation(stringTelemetry);
             }

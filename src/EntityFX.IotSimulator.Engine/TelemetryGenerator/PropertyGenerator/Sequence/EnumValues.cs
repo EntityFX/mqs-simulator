@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 
-namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
+namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence
 {
     public class EnumValues<T> : INullable, IRandom
     {
@@ -55,7 +55,7 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 
                     if (IsTwoWay)
                     {
-                        if(_index >= Values.Length)
+                        if (_index >= Values.Length)
                         {
                             direction = !direction;
                             _index = _index - 2;
@@ -72,7 +72,7 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
                 if (current == -1)
                 {
                     _index = 0;
-                    return default(T);
+                    return default;
                 }
                 return Values[current];
             }

@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Runtime;
+using EntityFX.IotSimulator.Engine.Settings.TelemetrySerializer;
+using EntityFX.IotSimulator.Engine.Builder;
 
 namespace EntityFX.IotSimulator.Common
 {

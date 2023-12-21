@@ -1,4 +1,8 @@
-﻿using System;
+﻿using EntityFX.IotSimulator.Engine.Builder;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Enums;
+using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator.Sequence;
+using System;
+using System.Collections.Generic;
 
 namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 {
@@ -35,9 +39,9 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
             }
         }
 
-        private readonly RandomRange random;
+        internal RandomRange random;
 
-        private readonly NumberSequence sequence;
+        internal NumberSequence sequence;
 
         public bool WithNull
         {
@@ -48,22 +52,10 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
             }
         }
 
-        public BoolGenerator(string name, BoolType type) : base(name, type)
+        public BoolGenerator(string name, BoolType type, Dictionary<string, object> variables) 
+            : base(name, type, variables)
         {
-            random = new RandomRange() { To = 2 };
-            sequence = new NumberSequence() { To = 2 };
-        }
 
-        public BoolGenerator(string name, bool? constant)
-            : base(name, BoolType.Constant)
-        {
-            ConstantValue = constant;
-        }
-
-        public BoolGenerator(string name, BoolType type, bool withNull)
-            : this(name, type)
-        {
-            random.WithNull = withNull;
         }
 
     }

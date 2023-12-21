@@ -1,9 +1,7 @@
 ﻿using EntityFX.IotSimulator.Common;
 using EntityFX.IotSimulator.Engine;
-using EntityFX.IotSimulator.Engine.TelemetryGenerator;
-using EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator;
-using EntityFX.IotSimulator.Engine.TelemetrySender;
-using EntityFX.IotSimulator.Engine.TelemetrySerializer;
+using EntityFX.IotSimulator.Engine.Builder;
+using EntityFX.IotSimulator.Engine.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,18 +13,14 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 
-namespace EntityFX.IotSimulator
+namespace EntityFX.IotSimulator.Host
 {
 
     class Program
     {
         private static IConfiguration configuration;
 
-        private static ITelemetryGenerator generator;
-
-        private static ITelemetrySender telemetrySender;
-
-        private static ITelemetrySerializer serializer;
+        private static IEnumerable<Simulator> simulators;
 
         private static ILogger logger;
 
@@ -49,7 +43,7 @@ namespace EntityFX.IotSimulator
 
         static void Main(string[] args)
         {
-            var builder = Host.CreateApplicationBuilder(args);
+            var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder(args);
 
             builder.Configuration
                 .AddJsonFile("appsettings.json")
@@ -63,28 +57,9 @@ namespace EntityFX.IotSimulator
 
             logger = InitLogger(host);
 
-            var asms = AppDomain.CurrentDomain.GetAssemblies();
+            var builderFactory = BuilderExtensions.WithDefault(logger, configuration, settings);
 
-            var generatorAsmType = BuilderHelper.GetDefaultAssemblyAndTypeName<TelemetryGeneratorBuilder>(settings.TelemetryGenerator?.Plugin);
-            var senderAsmType = BuilderHelper.GetDefaultAssemblyAndTypeName<TelemetrySenderBuilder>(settings.TelemetryGenerator?.Plugin);
-            var serializerAsmType = BuilderHelper.GetDefaultAssemblyAndTypeName<TelemetrySerializerBuilder>(settings.TelemetryGenerator?.Plugin);
-
-
-            var dictionarySettings = new Dictionary<string, object>()
-            {
-                ["settings"] = settings,
-                ["generatorAsmType"] = generatorAsmType,
-                ["serializerAsmType"] = serializerAsmType,
-                ["senderAsmType"] = senderAsmType,
-            };
-
-            var builderFactory = new BuilderFactory(logger, configuration, dictionarySettings);
-
-            generator = builderFactory.GetGeneratorBuilder().Build();
-
-            telemetrySender = builderFactory.GetSenderBuilder().Build();
-            
-            serializer = builderFactory.GetSerializerBuilder().Build();
+            simulators = builderFactory.BuildSimulators(settings.Instance);
 
             Start(settings.SendPeriod);
         }
@@ -112,31 +87,11 @@ namespace EntityFX.IotSimulator
 
         private static async void Send()
         {
-            var obj = generator.Value;
-
-            var serializedTelemetry = serializer.Serialize(obj);
-
-            //var jsonPolicy = new JsonSerializerOptions()
-            //{
-            //    WriteIndented = settings.MessageSerializer?.Indented ?? true,
-            //    DictionaryKeyPolicy = settings.MessageSerializer?.CamelCase == true ? JsonNamingPolicy.CamelCase : null,
-            //    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault,
-            //    PropertyNameCaseInsensitive = true
-            //};
-
-            //var objAsJson = JsonSerializer.Serialize(obj, jsonPolicy);
-            //logger.LogInformation(objAsJson);
-
-            try
+            foreach (var simulator in simulators)
             {
-                await telemetrySender.SendAsync(serializedTelemetry);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Send error");
-            }
+                await simulator.SimulateAsync();
 
-
+            }
         }
     }
 }

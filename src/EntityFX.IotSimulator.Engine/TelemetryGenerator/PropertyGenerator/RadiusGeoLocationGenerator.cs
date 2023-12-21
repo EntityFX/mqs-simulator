@@ -14,8 +14,8 @@ namespace EntityFX.IotSimulator.Engine.TelemetryGenerator.PropertyGenerator
 
         private int angle = 0;
 
-        public RadiusGeoLocationGenerator(string name, int points, double radius, GeoLocationValue center)
-            : base(name, default(Enum), new IPropertyGenerator[] { })
+        public RadiusGeoLocationGenerator(string name, int points, double radius, GeoLocationValue center, Dictionary<string, object> variables)
+            : base(name, default(Enum), new IPropertyGenerator[] { }, variables)
         {
             this.points = points;
             this.radius = radius;
