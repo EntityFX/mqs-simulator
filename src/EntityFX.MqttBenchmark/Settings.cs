@@ -1,32 +1,33 @@
 ﻿
 
+namespace EntityFX.MqttBenchmark;
+
 class Settings
 {
-    public Uri Broker { get; set; } = new Uri("mqtt://localhost:1883");
+    public Uri? Broker { get; set; } = new Uri("mqtt://localhost:1883");
 
-    public string Topic { get; set; } = "/test";
+    public string? Topic { get; set; } = "/test";
 
-    public string Payload { get; set; } = string.Empty;
+    public string? Payload { get; set; } = string.Empty;
 
     public string? Username { get; set; }
 
     public string? Password { get; set; }
 
-    public int Qos { get; set; } = 1;
+    public int? Qos { get; set; } = 1;
 
-    public TimeSpan Wait { get; set; } = TimeSpan.FromSeconds(60);
+    public TimeSpan? PublishTimeout { get; set; } = TimeSpan.FromSeconds(60);
 
-    public int MessageSize { get; set; } = 1024;
+    public int? MessageSize { get; set; } = 1024;
 
-    public int MessageCount { get; set; } = 10000;
+    public int? MessageCount { get; set; } = 10000;
 
-    public int Clients { get; set; } = 10;
+    public TimeSpan? TestMaxTime { get; set; } = TimeSpan.FromSeconds(15);
 
-    public string Format { get; set; } = "text";
+    public int? Clients { get; set; } = 10;
 
-    public bool Quiet { get; set; } = false;
 
-    public string ClientPrefix { get; set; } = "mqtt-benchmark";
+    public string? ClientPrefix { get; set; } = "mqtt-benchmark";
 
     public string? ClientCert { get; set; } 
 
@@ -34,7 +35,7 @@ class Settings
 
     public string? BrokerCaCert { get; set; }
 
-    public bool Insecure { get; set; } = false;
+    public bool? Insecure { get; set; } = false;
 
-    public TimeSpan MessageDelayInterval { get; set; } = TimeSpan.FromMilliseconds(2);
+    public TimeSpan? MessageDelayInterval { get; set; } = TimeSpan.FromMilliseconds(2);
 }
