@@ -20,7 +20,7 @@ class Settings
 
     public int MessageCount { get; set; } = 10000;
 
-    public int Clients { get; set; } = 5;
+    public int Clients { get; set; } = 10;
 
     public string Format { get; set; } = "text";
 

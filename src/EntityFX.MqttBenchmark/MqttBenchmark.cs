@@ -3,6 +3,7 @@ using MQTTnet.Client;
 using MQTTnet.Client.Options;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 
 class MqttBenchmark
 {
@@ -17,23 +18,32 @@ class MqttBenchmark
     {
         var clients = BuildClients();
 
-        var messages = clients.ToDictionary(kv => kv.Options.ClientId, 
-            kv => Enumerable.Range(0, settings.MessageCount).Select(i=> BuildMessage()).ToArray());
+        var messages = clients.ToDictionary(kv => kv.Options.ClientId,
+            kv => Enumerable.Range(0, settings.MessageCount).Select(i => BuildMessage()).ToArray());
 
         var sw = new Stopwatch();
         sw.Start();
 
         var clientTasks = clients.Select(c => SendMessages(c, messages[c.Options.ClientId])).ToArray();
 
+
         Task.WaitAll(clientTasks);
         var totalTime = sw.Elapsed;
 
-        var runResults = clientTasks.Select(t => t.Result).ToArray();
+        var results = clientTasks.Select(t => t.Result).ToArray();
 
-        var totalResults = CalculateTotalResults(runResults);
+        var totalResults = CalculateTotalResults(results, totalTime);
+
+        var serializerOptions = new JsonSerializerOptions() { WriteIndented = true };
+        var totalResultsJsonString = JsonSerializer.Serialize(totalResults, serializerOptions);
+        var runResultsJson = JsonSerializer.Serialize(results, serializerOptions);
+        Console.WriteLine("=== Run Results ===");
+        Console.WriteLine(runResultsJson);
+        Console.WriteLine("=== Total Results ===");
+        Console.WriteLine(totalResultsJsonString);
     }
 
-    private TotalResults CalculateTotalResults(RunResults[] runResults)
+    private TotalResults CalculateTotalResults(RunResults[] runResults, TimeSpan totalTime)
     {
         var successes = runResults.Sum(r => r.Seccesses);
         var failures = runResults.Sum(r => r.Failures);
@@ -41,8 +51,8 @@ class MqttBenchmark
 
 
         return new TotalResults(
-            ratio, successes, failures, 
-            TimeSpan.FromMilliseconds(runResults.Sum(r => r.RunTime.TotalMilliseconds)), 
+            ratio, successes, failures,
+            totalTime, 
             TimeSpan.FromMilliseconds(runResults.Average(r => r.RunTime.TotalMilliseconds)),
             runResults.Min(r => r.MessageTimeMin),
             runResults.Max(r => r.MessageTimeMax),
@@ -53,7 +63,6 @@ class MqttBenchmark
 
     private Task<RunResults> SendMessages(IMqttClient mqttClient, IEnumerable<MqttApplicationMessage> messages)
     {
-
         return Task.Run(async () =>
         {
             TimeSpan duration = TimeSpan.Zero;
@@ -82,7 +91,7 @@ class MqttBenchmark
                     failed++;
                 }
 
-                await Task.Delay(settings.MessageDelayInterval);
+                //Thread.Sleep(settings.MessageDelayInterval);
             }
 
             var standardDeviation = msgTimings.Select(s => s.TotalMilliseconds).StandardDeviation();
