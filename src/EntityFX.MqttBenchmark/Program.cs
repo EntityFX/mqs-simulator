@@ -14,7 +14,9 @@ if (testSettings == null)
 }
 
 var outputPath = testSettings.OutputPath;
-outputPath = Path.Combine(outputPath, DateTime.Now.ToString("s", CultureInfo.InvariantCulture));
+outputPath = Path.Combine(outputPath, 
+    DateTime.Now.ToString("s", CultureInfo.InvariantCulture)
+    .Replace(":", "_"));
 
 if (!Directory.Exists(outputPath))
 {
