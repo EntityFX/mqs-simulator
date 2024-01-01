@@ -16,7 +16,7 @@ class MqttBenchmark
         _settings = settings;
     }
 
-    public void Run()
+    public BenchmarkResults Run()
     {
         var clients = BuildClients().ToArray();
 
@@ -43,13 +43,7 @@ class MqttBenchmark
 
         var totalResults = CalculateTotalResults(results, totalTime);
 
-        var serializerOptions = new JsonSerializerOptions() { WriteIndented = true };
-        var totalResultsJsonString = JsonSerializer.Serialize(totalResults, serializerOptions);
-        var runResultsJson = JsonSerializer.Serialize(results, serializerOptions);
-        Console.WriteLine("=== Run Results ===");
-        Console.WriteLine(runResultsJson);
-        Console.WriteLine("=== Total Results ===");
-        Console.WriteLine(totalResultsJsonString);
+        return new BenchmarkResults(totalResults, results);
     }
 
     private TotalResults CalculateTotalResults(IEnumerable<RunResults> runResults, TimeSpan totalTime)
@@ -76,7 +70,6 @@ class MqttBenchmark
     private Task<RunResults> SendMessages(IMqttClient mqttClient, IEnumerable<MqttApplicationMessage> messages, 
         CancellationToken ct)
     {
-        var maxDuration = TimeSpan.FromSeconds(5);
         var messagesArray = messages.ToArray();
         
         return Task.Run(async () =>

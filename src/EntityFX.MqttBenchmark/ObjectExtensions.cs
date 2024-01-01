@@ -2,7 +2,7 @@ namespace EntityFX.MqttBenchmark;
 
 static class ObjectExtensions
 {
-    public static T CopyValues<T>(T target, T source)
+    public static T OverrideValues<T>(this T target, T source)
     {
         Type t = typeof(T);
 

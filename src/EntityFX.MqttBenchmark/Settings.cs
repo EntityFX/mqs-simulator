@@ -2,32 +2,33 @@
 
 namespace EntityFX.MqttBenchmark;
 
-class Settings
+class Settings : ICloneable
 {
-    public Uri? Broker { get; set; } = new Uri("mqtt://localhost:1883");
+    public Uri? Broker { get; set; }
 
-    public string? Topic { get; set; } = "/test";
+    public string? Topic { get; set; }
 
-    public string? Payload { get; set; } = string.Empty;
+    public string? Payload { get; set; }
 
     public string? Username { get; set; }
 
     public string? Password { get; set; }
 
-    public int? Qos { get; set; } = 1;
+    public int? Qos { get; set; }
 
-    public TimeSpan? PublishTimeout { get; set; } = TimeSpan.FromSeconds(60);
+    public TimeSpan? PublishTimeout { get; set; }
 
-    public int? MessageSize { get; set; } = 1024;
+    public int? MessageSize { get; set; }
 
-    public int? MessageCount { get; set; } = 10000;
+    public int? MessageCount { get; set; }
 
-    public TimeSpan? TestMaxTime { get; set; } = TimeSpan.FromSeconds(15);
+    public TimeSpan? TestMaxTime { get; set; }
+    
+    public TimeSpan? WaitAfterTime { get; set; }
 
-    public int? Clients { get; set; } = 10;
-
-
-    public string? ClientPrefix { get; set; } = "mqtt-benchmark";
+    public int? Clients { get; set; }
+    
+    public string? ClientPrefix { get; set; }
 
     public string? ClientCert { get; set; } 
 
@@ -38,4 +39,9 @@ class Settings
     public bool? Insecure { get; set; } = false;
 
     public TimeSpan? MessageDelayInterval { get; set; } = TimeSpan.FromMilliseconds(2);
+    
+    public object Clone()
+    {
+        return this.MemberwiseClone();
+    }
 }
