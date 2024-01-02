@@ -91,7 +91,7 @@ static class ResultsHelper
         return sb.ToString();
     }
     
-    public static void PrintAndStoreResults(BenchmarkResults benchmarkResults, string testName,
+    public static void StoreResults(BenchmarkResults benchmarkResults, string testName,
         Settings settings, string testResultsOutputPath)
     {
         var jsonSerializerOptions = new JsonSerializerOptions() { WriteIndented = true };
@@ -100,8 +100,6 @@ static class ResultsHelper
         var runResultsJson = JsonSerializer.Serialize(benchmarkResults.RunResults, jsonSerializerOptions);
         var settingJsonString = JsonSerializer.Serialize(settings, jsonSerializerOptions);
     
-        Console.WriteLine(totalResultsJsonString);
-
         var testOutputPath = Path.Combine(testResultsOutputPath, testName);
         if (!Directory.Exists(testOutputPath))
         {

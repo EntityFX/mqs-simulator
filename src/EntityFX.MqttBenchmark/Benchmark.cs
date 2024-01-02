@@ -74,6 +74,10 @@ class Benchmark
                         }
                         Console.WriteLine("-----");
 
+                        var resultsAsTable = ResultsHelper.AsTable(results);
+                        Console.WriteLine();
+                        Console.WriteLine(resultsAsTable);
+
                         return results;
                     })
                 .ToArray();
@@ -110,7 +114,7 @@ class Benchmark
 
         Console.WriteLine($"{DateTime.Now}: Test {testName} complete");
 
-        ResultsHelper.PrintAndStoreResults(results, testName, setting, _outputPath);
+        ResultsHelper.StoreResults(results, testName, setting, _outputPath);
 
         return results;
     }
