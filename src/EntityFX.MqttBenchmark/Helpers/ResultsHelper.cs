@@ -9,16 +9,37 @@ static class ResultsHelper
     {
         var sb = new StringBuilder();
 
-        var headers = new[]
+        var headers = new Dictionary<string, int>()
         {
-            $"{"Test", 18}", $"{"Address", 25}", $"{"Topic", 20}", $"{"Qos", 3}", 
-            $"{"Msg per sec", 18}", $"{"Successes",9}", $"{"Failures",8}", $"{"Total bytes",15}"
+            ["Test"] = 18,
+            ["Address"] = 25,
+            ["Topic"] = 20,
+            ["Qos"] = 3,
+            ["Msg per sec"] = 18,
+            ["Successes"] = 9,
+            ["Failures"] = 8,
+            ["Total bytes"] = 15
         };
-        sb.AppendLine($"| {string.Join(" | ", headers)} |");
+
+        foreach (BenchmarkResults r in results)
+        {
+            headers["Test"] = r.TestName.Length > headers["Test"] ? r.TestName.Length : headers["Test"];
+            headers["Address"] = r.Settings!.Broker!.ToString().Length > headers["Address"] 
+                ? r.Settings!.Broker!.ToString().Length : headers["Address"];
+            headers["Topic"] = r.Settings!.Topic!.Length > headers["Topic"]
+                ? r.Settings!.Topic!.Length : headers["Topic"];
+        }
+
+        foreach (var headerItem in headers)
+        {
+            sb.Append($"| {headerItem.Key.PadLeft(headerItem.Value)} ");
+        }
+        sb.AppendLine("|");
 
         var dashes = new[]
         {
-            new string('-',18), new string('-',25), new string('-',20),new string('-',3),
+            new string('-',headers["Test"]), new string('-',headers["Address"]), 
+            new string('-',headers["Topic"]),new string('-',3),
             new string('-',18),new string('-',9),new string('-',8),new string('-',15)
         };
         sb.AppendLine($"|-{string.Join("-|-", dashes)}-|");
@@ -28,9 +49,14 @@ static class ResultsHelper
             var tr = runResult.TotalResults;
             var rowItems = new[]
             {
-                $"{runResult.TestName,18}", $"{runResult.Settings.Broker,25}", 
-                $"{runResult.Settings.Topic, 20}", $"{runResult.Settings.Qos, 3}",
-                $"{tr.MessagesPerSecond,18:N2}", $"{tr.Successes,9}", $"{tr.Failures,8}", $"{tr.TotalBytesSent,15:N0}", 
+                $"{runResult.TestName.PadLeft(headers["Test"])}", 
+                $"{runResult.Settings.Broker!.ToString().PadLeft(headers["Address"])}",
+                $"{runResult.Settings.Topic!.PadLeft(headers["Topic"])}",
+                $"{runResult.Settings.Qos, 3}",
+                $"{tr.MessagesPerSecond,18:N2}", 
+                $"{tr.Successes,9}", 
+                $"{tr.Failures,8}", 
+                $"{tr.TotalBytesSent,15:N0}", 
             };
             sb.AppendLine($"| {string.Join(" | ", rowItems)} |");
         }

@@ -90,8 +90,6 @@ class MqttBenchmark
                 try
                 {
                     var publishResult = await mqttClient.PublishAsync(message, CancellationToken.None);
-                    msgTimings.Add(msgSw.Elapsed);
-                    duration += msgSw.Elapsed;
                     
                     if (publishResult.ReasonCode == MqttClientPublishReasonCode.Success)
                     {
@@ -106,6 +104,11 @@ class MqttBenchmark
                 catch (Exception)
                 {
                     failed++;
+                }
+                finally
+                {
+                    msgTimings.Add(msgSw.Elapsed);
+                    duration += msgSw.Elapsed;
                 }
 
                 if ((_settings.MessageCount != null && total >= _settings.MessageCount - 1)

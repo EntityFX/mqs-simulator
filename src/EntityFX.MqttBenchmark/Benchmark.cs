@@ -56,15 +56,25 @@ class Benchmark
             return _testSettings.Tests.SelectMany(
                     test =>
                     {
-                        if (test.Value.Count > 1)
-                        {
-                            GC.Collect();
-
-                            return RunParallelTests(test.Key, test.Value);
-                        }
-
                         GC.Collect();
-                        return new[] { RunTest(test.Key, _testSettings.Settings, test.Value.First().Value) };
+
+                        var results = test.Value.Count > 1 ?
+                        RunParallelTests(test.Key, test.Value) :
+                        new[] { RunTest(test.Key, _testSettings.Settings, test.Value.First().Value) };
+
+
+                        var waitAfterTime = test.Value.Count > 1 ? _testSettings.Settings.WaitAfterTime :
+                            results.FirstOrDefault()?.Settings.WaitAfterTime;
+
+                        if (waitAfterTime != null)
+                        {
+                            Console.WriteLine($"{DateTime.Now}: Wait {waitAfterTime.Value.TotalMilliseconds} " +
+                                $"after {test.Key}");
+                            Thread.Sleep((int)waitAfterTime.Value.TotalMilliseconds);
+                        }
+                        Console.WriteLine("-----");
+
+                        return results;
                     })
                 .ToArray();
         }
@@ -87,7 +97,8 @@ class Benchmark
         return testTasks.Select(t => t.Result).ToArray();
     }
 
-    private BenchmarkResults RunTest(string testName, Settings defaultSettings, Settings testSettings)
+    private BenchmarkResults RunTest(
+        string testName, Settings defaultSettings, Settings testSettings)
     {
         var setting = (Settings)defaultSettings.Clone();
         setting = setting.OverrideValues(testSettings);
@@ -100,13 +111,6 @@ class Benchmark
         Console.WriteLine($"{DateTime.Now}: Test {testName} complete");
 
         ResultsHelper.PrintAndStoreResults(results, testName, setting, _outputPath);
-
-        if (setting.WaitAfterTime != null)
-        {
-            Console.WriteLine($"{DateTime.Now}: Wait after {testName}");
-            Thread.Sleep((int)setting.WaitAfterTime.Value.TotalMilliseconds);
-        }
-        Console.WriteLine("-----");
 
         return results;
     }
