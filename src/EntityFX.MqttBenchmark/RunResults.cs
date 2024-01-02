@@ -9,5 +9,6 @@ record RunResults (
     TimeSpan MessageTimeMax,
     TimeSpan MessageTimeMean,
     decimal MessageStandardDeviation,
-    decimal MessagesPerSecond
+    decimal MessagesPerSecond,
+    int BytesSent
 );

@@ -12,5 +12,6 @@ record TotalResults(
     TimeSpan MessageTimeMeanAvg,
     decimal MessageTimeStandardDeviation,
     decimal MessagesPerSecond,
-    decimal AverageMessagesPerSec
+    decimal AverageMessagesPerSec,
+    int TotalBytesSent
 );

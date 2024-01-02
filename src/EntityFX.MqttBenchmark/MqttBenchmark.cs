@@ -16,13 +16,9 @@ class MqttBenchmark
         _settings = settings;
     }
 
-    public BenchmarkResults Run()
+    public BenchmarkResults Run(string testName)
     {
         var clients = BuildClients().ToArray();
-
-        var messages = clients.ToDictionary(kv => kv.Options.ClientId,
-            _ => Enumerable.Range(0, _settings.MessageCount!.Value)
-                .Select(_ => BuildMessage()).ToArray());
 
         var cancelTokenSource = new CancellationTokenSource(); 
         var token = cancelTokenSource.Token;
@@ -31,7 +27,7 @@ class MqttBenchmark
         sw.Start();
 
         var clientTasks = clients
-            .Select(c => SendMessages(c, messages[c.Options.ClientId], token))
+            .Select(c => SendMessages(c, token))
             .ToArray();
 
 
@@ -43,7 +39,7 @@ class MqttBenchmark
 
         var totalResults = CalculateTotalResults(results, totalTime);
 
-        return new BenchmarkResults(totalResults, results);
+        return new BenchmarkResults(testName, totalResults, results, _settings);
     }
 
     private TotalResults CalculateTotalResults(IEnumerable<RunResults> runResults, TimeSpan totalTime)
@@ -52,7 +48,7 @@ class MqttBenchmark
         var successes = runResultsArray.Sum(r => r.Seccesses);
         var failures = runResultsArray.Sum(r => r.Failures);
         var ratio = successes > 0 ? successes / (decimal)(successes + failures) : 0;
-
+        var totalBytes = runResultsArray.Sum(r => r.BytesSent);
 
         return new TotalResults(
             ratio, successes, failures,
@@ -64,14 +60,12 @@ class MqttBenchmark
                 runResultsArray.Average(r => r.MessageTimeMean.TotalMilliseconds)),
             (decimal)runResultsArray.Select(s => s.MessageTimeMean.TotalMilliseconds).StandardDeviation(),
             runResultsArray.Sum( r => r.MessagesPerSecond), 
-            runResultsArray.Average(r => r.MessagesPerSecond));
+            runResultsArray.Average(r => r.MessagesPerSecond), 
+            totalBytes);
     }
 
-    private Task<RunResults> SendMessages(IMqttClient mqttClient, IEnumerable<MqttApplicationMessage> messages, 
-        CancellationToken ct)
+    private Task<RunResults> SendMessages(IMqttClient mqttClient, CancellationToken ct)
     {
-        var messagesArray = messages.ToArray();
-        
         return Task.Run(async () =>
         {
             TimeSpan duration = TimeSpan.Zero;
@@ -83,9 +77,14 @@ class MqttBenchmark
 
             int succeed = 0;
             int failed = 0;
+            int total = 0;
+            bool end = false;
+            int totalBytes = 0;
 
-            foreach (var message in messagesArray)
+            while (!end)
             {
+                var message = BuildMessage();
+
                 msgSw.Restart();
 
                 try
@@ -97,6 +96,7 @@ class MqttBenchmark
                     if (publishResult.ReasonCode == MqttClientPublishReasonCode.Success)
                     {
                         succeed++;
+                        totalBytes += message.Payload.Length;
                     }
                     else
                     {
@@ -108,20 +108,23 @@ class MqttBenchmark
                     failed++;
                 }
 
-                if ((_settings.TestMaxTime != null && duration >= _settings.TestMaxTime) || ct.IsCancellationRequested)
+                if ((_settings.MessageCount != null && total >= _settings.MessageCount - 1)
+                    || (_settings.TestMaxTime != null && duration >= _settings.TestMaxTime) 
+                    || ct.IsCancellationRequested)
                 {
-                    return GetResults(msgTimings, messagesArray.Count(), 
-                        mqttClient.Options.ClientId, duration, succeed, failed);
+                    end = true;
                 }
+
+                total++;
             }
             
-            return GetResults(msgTimings, messagesArray.Count(), 
-                mqttClient.Options.ClientId, duration, succeed, failed);
+            return GetResults(msgTimings, total, 
+                mqttClient.Options.ClientId, duration, succeed, failed, totalBytes);
         }, ct);
     }
 
     private RunResults GetResults(List<TimeSpan> msgTimings, int count,
-        string clientId, TimeSpan duration, int succeed, int failed)
+        string clientId, TimeSpan duration, int succeed, int failed, int totalBytes)
     {
         var standardDeviation = msgTimings.Select(s => s.TotalMilliseconds).StandardDeviation();
 
@@ -130,7 +133,7 @@ class MqttBenchmark
             msgTimings.Max(), 
             TimeSpan.FromMilliseconds(msgTimings.Average(s => s.TotalMilliseconds)), 
             (decimal)standardDeviation, 
-            (decimal)(count / duration.TotalSeconds)
+            (decimal)(count / duration.TotalSeconds), totalBytes
         );
     }
 
@@ -166,7 +169,7 @@ class MqttBenchmark
 
         var applicationMessage = new MqttApplicationMessageBuilder()
             .WithTopic(_settings.Topic)
-            .WithQualityOfServiceLevel(_settings.Qos!.Value)
+            .WithQualityOfServiceLevel(_settings.Qos ?? 1)
             .WithPayload(payload)
             .Build();
 
