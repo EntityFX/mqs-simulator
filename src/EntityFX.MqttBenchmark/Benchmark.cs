@@ -35,7 +35,7 @@ class Benchmark
         var resultsAsCsv = ResultsHelper.AsCsv(results);
         Console.WriteLine();
         Console.WriteLine(resultsAsTable);
-        
+
         File.WriteAllText(Path.Combine(_outputPath, "results.md"), resultsAsTable);
         File.WriteAllText(Path.Combine(_outputPath, "results.csv"), resultsAsCsv);
 
@@ -43,7 +43,7 @@ class Benchmark
 
         return 0;
     }
-    
+
     private IEnumerable<BenchmarkResults> RunTests()
     {
         if (_testSettings == null)
@@ -53,15 +53,38 @@ class Benchmark
 
         if (_testSettings?.Tests.Any() == true)
         {
-            return _testSettings.Tests.Select(
+            return _testSettings.Tests.SelectMany(
                     test =>
-                        RunTest(test.Key, _testSettings.Settings, test.Value))
+                    {
+                        if (test.Value.Count > 1)
+                        {
+                            GC.Collect();
+
+                            return RunParallelTests(test.Key, test.Value);
+                        }
+
+                        GC.Collect();
+                        return new[] { RunTest(test.Key, _testSettings.Settings, test.Value.First().Value) };
+                    })
                 .ToArray();
         }
 
         var oneResult = RunTest(
             "default", _testSettings!.Settings, _testSettings.Settings);
         return new[] { oneResult };
+    }
+
+    private IEnumerable<BenchmarkResults> RunParallelTests(string testGroup, Dictionary<string, Settings> tests)
+    {
+        Console.WriteLine($"{DateTime.Now}: Run parallel tests group {testGroup}");
+        var testTasks = tests
+        .Select(t => Task.Run(
+            () => RunTest(t.Key, _testSettings!.Settings, t.Value)))
+        .ToArray();
+        Task.WaitAll(testTasks);
+        Console.WriteLine($"{DateTime.Now}: Parallel tests group {testGroup} complete");
+
+        return testTasks.Select(t => t.Result).ToArray();
     }
 
     private BenchmarkResults RunTest(string testName, Settings defaultSettings, Settings testSettings)

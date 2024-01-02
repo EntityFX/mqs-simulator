@@ -12,17 +12,26 @@ var result = benchmark.Run();
 
 return result;
 
-TestSettings? LoadSettings(string[] strings)
+TestSettings? LoadSettings(string[] args)
 {
-    var builder = Host.CreateApplicationBuilder(strings);
+    var builder = Host.CreateApplicationBuilder(args);
+
+    var extraConfig = GetExtraConfig(args);
 
     Console.WriteLine($"Envrionment: {builder.Environment.EnvironmentName}");
+
+    if (!string.IsNullOrEmpty(extraConfig))
+    {
+        Console.WriteLine($"Extra config: {extraConfig}");
+
+        builder.Configuration.AddJsonFile(extraConfig);
+    }
 
     builder.Configuration
         .AddJsonFile("appsettings.json")
         .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
         .AddEnvironmentVariables()
-        .AddCommandLine(strings);
+        .AddCommandLine(args);
 
     builder.Logging.ClearProviders();
 
@@ -37,4 +46,19 @@ TestSettings? LoadSettings(string[] strings)
     }
 
     return settings;
+}
+
+string? GetExtraConfig(string[] args)
+{
+    var configArgNames = new[] { "-c", "--config" };
+
+    for (int i = 0; i < args.Length; i++)
+    {
+        if (configArgNames.Contains(args[i]) && i <= args.Length)
+        {
+            return args[++i];
+        }
+    }
+
+    return null;
 }
