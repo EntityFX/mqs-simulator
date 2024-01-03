@@ -13,5 +13,5 @@ record TotalResults(
     decimal MessageTimeStandardDeviation,
     decimal MessagesPerSecond,
     decimal AverageMessagesPerSec,
-    int TotalBytesSent
+    long TotalBytesSent
 );

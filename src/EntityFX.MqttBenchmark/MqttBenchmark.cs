@@ -158,10 +158,17 @@ class MqttBenchmark
                 .WithCommunicationTimeout(_settings.PublishTimeout!.Value)
                 .Build();
 
-            mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None).Wait();
+            try
+            {
+                mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None).Wait();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
 
             return mqttClient;
-        }).ToArray();
+        }).Where(c => c != null).Cast<IMqttClient>().ToArray();
     }
 
     private MqttApplicationMessage BuildMessage()

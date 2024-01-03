@@ -68,7 +68,7 @@ class Benchmark
 
                         if (waitAfterTime != null)
                         {
-                            Console.WriteLine($"{DateTime.Now}: Wait {waitAfterTime.Value.TotalMilliseconds} " +
+                            Console.WriteLine($"{DateTime.Now}: Wait {waitAfterTime.Value} " +
                                 $"after {test.Key}");
                             Thread.Sleep((int)waitAfterTime.Value.TotalMilliseconds);
                         }

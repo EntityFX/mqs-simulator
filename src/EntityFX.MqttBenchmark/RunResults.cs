@@ -10,5 +10,5 @@ record RunResults (
     TimeSpan MessageTimeMean,
     decimal MessageStandardDeviation,
     decimal MessagesPerSecond,
-    int BytesSent
+    long BytesSent
 );
