@@ -18,7 +18,8 @@ static class ResultsHelper
             ["Msg per sec"] = 18,
             ["Successes"] = 9,
             ["Failures"] = 8,
-            ["Total bytes"] = 15
+            ["Total bytes"] = 15,
+            ["Total time"] = 10
         };
 
         foreach (BenchmarkResults r in results)
@@ -57,6 +58,7 @@ static class ResultsHelper
                 $"{tr.Successes,9}", 
                 $"{tr.Failures,8}", 
                 $"{tr.TotalBytesSent,15:N0}", 
+                $"{tr.TotalRunTime, 10:hh:mm:ss}"
             };
             sb.AppendLine($"| {string.Join(" | ", rowItems)} |");
         }

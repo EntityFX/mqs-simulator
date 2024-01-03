@@ -20,9 +20,9 @@ class MqttBenchmark
     {
         var clients = BuildClients().ToArray();
 
-        var cancelTokenSource = new CancellationTokenSource(); 
+        var cancelTokenSource = new CancellationTokenSource();
         var token = cancelTokenSource.Token;
-        
+
         var sw = new Stopwatch();
         sw.Start();
 
@@ -44,7 +44,23 @@ class MqttBenchmark
 
     private TotalResults CalculateTotalResults(IEnumerable<RunResults> runResults, TimeSpan totalTime)
     {
-        var runResultsArray = runResults.ToArray();
+        var runResultsArray = runResults.ToArray() ?? Array.Empty<RunResults>();
+
+        if (!runResultsArray.Any())
+        {
+            return new TotalResults(
+                1, 0, 0,
+                totalTime,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                0,
+                0,
+                0,
+                0);
+        }
+
         var successes = runResultsArray.Sum(r => r.Seccesses);
         var failures = runResultsArray.Sum(r => r.Failures);
         var ratio = successes > 0 ? successes / (decimal)(successes + failures) : 0;
@@ -52,15 +68,15 @@ class MqttBenchmark
 
         return new TotalResults(
             ratio, successes, failures,
-            totalTime, 
+            totalTime,
             TimeSpan.FromMilliseconds(runResultsArray.Average(r => r.RunTime.TotalMilliseconds)),
             runResultsArray.Min(r => r.MessageTimeMin),
             runResultsArray.Max(r => r.MessageTimeMax),
             TimeSpan.FromMilliseconds(
                 runResultsArray.Average(r => r.MessageTimeMean.TotalMilliseconds)),
             (decimal)runResultsArray.Select(s => s.MessageTimeMean.TotalMilliseconds).StandardDeviation(),
-            runResultsArray.Sum( r => r.MessagesPerSecond), 
-            runResultsArray.Average(r => r.MessagesPerSecond), 
+            runResultsArray.Sum(r => r.MessagesPerSecond),
+            runResultsArray.Average(r => r.MessagesPerSecond),
             totalBytes);
     }
 
@@ -90,7 +106,7 @@ class MqttBenchmark
                 try
                 {
                     var publishResult = await mqttClient.PublishAsync(message, CancellationToken.None);
-                    
+
                     if (publishResult.ReasonCode == MqttClientPublishReasonCode.Success)
                     {
                         succeed++;
@@ -112,7 +128,7 @@ class MqttBenchmark
                 }
 
                 if ((_settings.MessageCount != null && total >= _settings.MessageCount - 1)
-                    || (_settings.TestMaxTime != null && duration >= _settings.TestMaxTime) 
+                    || (_settings.TestMaxTime != null && duration >= _settings.TestMaxTime)
                     || ct.IsCancellationRequested)
                 {
                     end = true;
@@ -120,8 +136,8 @@ class MqttBenchmark
 
                 total++;
             }
-            
-            return GetResults(msgTimings, total, 
+
+            return GetResults(msgTimings, total,
                 mqttClient.Options.ClientId, duration, succeed, failed, totalBytes);
         }, ct);
     }
@@ -132,10 +148,10 @@ class MqttBenchmark
         var standardDeviation = msgTimings.Select(s => s.TotalMilliseconds).StandardDeviation();
 
         return new RunResults(
-            clientId, succeed, failed, duration, msgTimings.Min(), 
-            msgTimings.Max(), 
-            TimeSpan.FromMilliseconds(msgTimings.Average(s => s.TotalMilliseconds)), 
-            (decimal)standardDeviation, 
+            clientId, succeed, failed, duration, msgTimings.Min(),
+            msgTimings.Max(),
+            TimeSpan.FromMilliseconds(msgTimings.Average(s => s.TotalMilliseconds)),
+            (decimal)standardDeviation,
             (decimal)(count / duration.TotalSeconds), totalBytes
         );
     }
@@ -144,7 +160,8 @@ class MqttBenchmark
     {
         var mqttFactory = new MqttFactory();
 
-        return Enumerable.Range(0, _settings.Clients!.Value).Select(clientId => {
+        return Enumerable.Range(0, _settings.Clients!.Value).Select(clientId =>
+        {
             var mqttClient = mqttFactory.CreateMqttClient();
 
             var mqttClientOptions = new MqttClientOptionsBuilder()
