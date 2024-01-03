@@ -58,7 +58,7 @@ static class ResultsHelper
                 $"{tr.Successes,9}", 
                 $"{tr.Failures,8}", 
                 $"{tr.TotalBytesSent,15:N0}", 
-                $"{tr.TotalRunTime, 10:hh:mm:ss}"
+                $"{tr.TotalRunTime, 10:hh\\:mm\\:ss}"
             };
             sb.AppendLine($"| {string.Join(" | ", rowItems)} |");
         }
