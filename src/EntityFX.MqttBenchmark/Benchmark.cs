@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EntityFX.MqttBenchmark.Helpers;
 
 namespace EntityFX.MqttBenchmark;
 
@@ -62,12 +63,12 @@ class Benchmark
                         if (_testSettings.InParallel)
                         {
                             results = test.Value.Count > 1
-                                ? RunParallelTests(test.Key, test.Value)
-                                : RunTests(test.Key, test.Value);
+                                ? RunParallelTests(test.Key, test.Value).Result.ToArray()
+                                : RunTests(test.Key, test.Value).ToArray();
                         }
                         else
                         {
-                            results = RunTests(test.Key, test.Value);
+                            results = RunTests(test.Key, test.Value).ToArray();
                         }
                         
                         var waitAfterTime = test.Value.Count > 1 ? _testSettings.Settings.WaitAfterTime :
@@ -92,31 +93,32 @@ class Benchmark
 
         var oneResult = RunTest(
             "default", _testSettings!.Settings, _testSettings.Settings);
-        return new[] { oneResult };
+        return new[] { oneResult.Result };
     }
 
     private IEnumerable<BenchmarkResults> RunTests(string testGroup, Dictionary<string,Settings> tests)
     {
         Console.WriteLine($"{DateTime.Now}: Run tests group {testGroup}");
         return tests
-            .Select(t => RunTest(t.Key, _testSettings!.Settings, t.Value))
+            .Select(t => RunTest(t.Key, _testSettings!.Settings, t.Value).Result)
             .ToArray();
     }
 
-    private IEnumerable<BenchmarkResults> RunParallelTests(string testGroup, Dictionary<string, Settings> tests)
+    private async Task<IEnumerable<BenchmarkResults>> RunParallelTests(string testGroup, Dictionary<string, Settings> tests)
     {
         Console.WriteLine($"{DateTime.Now}: Run parallel tests group {testGroup}");
         var testTasks = tests
         .Select(t => Task.Run(
-            () => RunTest(t.Key, _testSettings!.Settings, t.Value)))
+            () => 
+                RunTest(t.Key, (Settings)_testSettings!.Settings.Clone(), t.Value)))
         .ToArray();
-        Task.WaitAll(testTasks);
+        var results = await Task.WhenAll(testTasks);
         Console.WriteLine($"{DateTime.Now}: Parallel tests group {testGroup} complete");
 
-        return testTasks.Select(t => t.Result).ToArray();
+        return results.ToArray();
     }
 
-    private BenchmarkResults RunTest(
+    private async Task<BenchmarkResults> RunTest(
         string testName, Settings defaultSettings, Settings testSettings)
     {
         var setting = (Settings)defaultSettings.Clone();
@@ -125,7 +127,7 @@ class Benchmark
         Console.WriteLine($"{DateTime.Now}: Run test {testName}");
 
         var benchmark = new MqttBenchmark(setting);
-        var results = benchmark.Run(testName);
+        var results = await benchmark.Run(testName);
 
         Console.WriteLine($"{DateTime.Now}: Test {testName} complete");
 

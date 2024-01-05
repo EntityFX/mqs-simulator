@@ -1,4 +1,4 @@
-namespace EntityFX.MqttBenchmark;
+namespace EntityFX.MqttBenchmark.Helpers;
 
 static class ObjectExtensions
 {

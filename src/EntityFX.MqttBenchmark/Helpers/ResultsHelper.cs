@@ -1,7 +1,7 @@
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using EntityFX.MqttBenchmark;
+
+namespace EntityFX.MqttBenchmark.Helpers;
 
 static class ResultsHelper
 {
@@ -24,13 +24,15 @@ static class ResultsHelper
             ["Test time"] = 10
         };
 
-        foreach (BenchmarkResults r in results)
+        var arrayResults = results.ToArray();
+
+        foreach (BenchmarkResults r in arrayResults)
         {
             headers["Test"] = r.TestName.Length > headers["Test"] ? r.TestName.Length : headers["Test"];
-            headers["Address"] = r.Settings!.Broker!.ToString().Length > headers["Address"] 
-                ? r.Settings!.Broker!.ToString().Length : headers["Address"];
-            headers["Topic"] = r.Settings!.Topic!.Length > headers["Topic"]
-                ? r.Settings!.Topic!.Length : headers["Topic"];
+            headers["Address"] = r.Settings.Broker!.ToString().Length > headers["Address"] 
+                ? r.Settings.Broker!.ToString().Length : headers["Address"];
+            headers["Topic"] = r.Settings.Topic!.Length > headers["Topic"]
+                ? r.Settings.Topic!.Length : headers["Topic"];
         }
 
         foreach (var headerItem in headers)
@@ -44,7 +46,7 @@ static class ResultsHelper
 
         sb.AppendLine($"|-{string.Join("-|-", dashes)}-|");
         
-        foreach (var runResult in results)
+        foreach (var runResult in arrayResults)
         {
             var tr = runResult.TotalResults;
             var rowItems = new[]
