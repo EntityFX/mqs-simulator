@@ -6,5 +6,7 @@ class TestSettings
 
     public Dictionary<string, Dictionary<string, Settings>> Tests { get; set; } = new ();
 
+    public bool InParallel { get; set; } = true;
+
     public string OutputPath { get; set; } = "results";
 }

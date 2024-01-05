@@ -19,7 +19,9 @@ static class ResultsHelper
             ["Successes"] = 9,
             ["Failures"] = 8,
             ["Total bytes"] = 15,
-            ["Total time"] = 10
+            ["Total clients"] = 13,
+            ["Total time"] = 10,
+            ["Test time"] = 10
         };
 
         foreach (BenchmarkResults r in results)
@@ -37,12 +39,9 @@ static class ResultsHelper
         }
         sb.AppendLine("|");
 
-        var dashes = new[]
-        {
-            new string('-',headers["Test"]), new string('-',headers["Address"]), 
-            new string('-',headers["Topic"]),new string('-',3),
-            new string('-',18),new string('-',9),new string('-',8),new string('-',15)
-        };
+        var dashes = headers.Select(d => new string('-', d.Value));
+
+
         sb.AppendLine($"|-{string.Join("-|-", dashes)}-|");
         
         foreach (var runResult in results)
@@ -58,7 +57,9 @@ static class ResultsHelper
                 $"{tr.Successes,9}", 
                 $"{tr.Failures,8}", 
                 $"{tr.TotalBytesSent,15:N0}", 
-                $"{tr.TotalRunTime, 10:hh\\:mm\\:ss}"
+                $"{tr.TotalClients,13:N0}", 
+                $"{tr.TotalRunTime, 10:hh\\:mm\\:ss}",
+                $"{tr.TestTime, 10:hh\\:mm\\:ss}",
             };
             sb.AppendLine($"| {string.Join(" | ", rowItems)} |");
         }

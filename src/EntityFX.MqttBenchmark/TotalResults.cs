@@ -6,6 +6,7 @@ record TotalResults(
     long Successes,
     long Failures,
     TimeSpan TotalRunTime,
+    TimeSpan TestTime,
     TimeSpan AverageRunTime,
     TimeSpan MessageTimeMin,
     TimeSpan MessageTimeMax,
@@ -13,5 +14,6 @@ record TotalResults(
     decimal MessageTimeStandardDeviation,
     decimal MessagesPerSecond,
     decimal AverageMessagesPerSec,
+    int TotalClients,
     long TotalBytesSent
 );

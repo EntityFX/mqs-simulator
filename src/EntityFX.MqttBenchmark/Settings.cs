@@ -26,6 +26,8 @@ class Settings : ICloneable
     
     public TimeSpan? WaitAfterTime { get; set; }
 
+    public int? ConnectAttempts { get; set; }
+
     public int? Clients { get; set; }
     
     public string? ClientPrefix { get; set; }

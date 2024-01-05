@@ -57,12 +57,19 @@ class Benchmark
                     test =>
                     {
                         GC.Collect();
+                        IEnumerable<BenchmarkResults> results;
 
-                        var results = test.Value.Count > 1 ?
-                        RunParallelTests(test.Key, test.Value) :
-                        new[] { RunTest(test.Key, _testSettings.Settings, test.Value.First().Value) };
-
-
+                        if (_testSettings.InParallel)
+                        {
+                            results = test.Value.Count > 1
+                                ? RunParallelTests(test.Key, test.Value)
+                                : RunTests(test.Key, test.Value);
+                        }
+                        else
+                        {
+                            results = RunTests(test.Key, test.Value);
+                        }
+                        
                         var waitAfterTime = test.Value.Count > 1 ? _testSettings.Settings.WaitAfterTime :
                             results.FirstOrDefault()?.Settings.WaitAfterTime;
 
@@ -86,6 +93,14 @@ class Benchmark
         var oneResult = RunTest(
             "default", _testSettings!.Settings, _testSettings.Settings);
         return new[] { oneResult };
+    }
+
+    private IEnumerable<BenchmarkResults> RunTests(string testGroup, Dictionary<string,Settings> tests)
+    {
+        Console.WriteLine($"{DateTime.Now}: Run tests group {testGroup}");
+        return tests
+            .Select(t => RunTest(t.Key, _testSettings!.Settings, t.Value))
+            .ToArray();
     }
 
     private IEnumerable<BenchmarkResults> RunParallelTests(string testGroup, Dictionary<string, Settings> tests)
