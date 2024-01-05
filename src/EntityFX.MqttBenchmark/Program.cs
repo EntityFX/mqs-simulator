@@ -44,6 +44,8 @@ TestSettings? LoadSettings(string[] args)
     {
         settings!.Settings.Clients = Environment.ProcessorCount;
     }
+    Console.WriteLine($"Default clients: {settings.Settings.Clients}");
+    Console.WriteLine($"In parallel: {settings.InParallel}");
 
     return settings;
 }

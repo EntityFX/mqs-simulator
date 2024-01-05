@@ -21,7 +21,7 @@ class MqttBenchmark
 
     public async Task<BenchmarkResults> Run(string testName)
     {
-        var clients = BuildClients();
+        var clients = await BuildClients(testName);
 
         var testTimeSw = new Stopwatch();
         testTimeSw.Start();
@@ -42,7 +42,7 @@ class MqttBenchmark
         return new BenchmarkResults(testName, totalResults, results, _settings);
     }
 
-    private TotalResults CalculateTotalResults(IEnumerable<RunResults> runResults, 
+    private TotalResults CalculateTotalResults(IEnumerable<RunResults> runResults,
         ConcurrentBag<IMqttClient> clients,
         TimeSpan testTime)
     {
@@ -52,8 +52,8 @@ class MqttBenchmark
         {
             return new TotalResults(
                 1, 0, 0,
-                TimeSpan.Zero, 
-                TimeSpan.Zero, 
+                TimeSpan.Zero,
+                TimeSpan.Zero,
                 TimeSpan.Zero,
                 TimeSpan.Zero,
                 TimeSpan.Zero,
@@ -153,11 +153,11 @@ class MqttBenchmark
         if (msgTimings?.Any() != true)
         {
             return new RunResults(clientId, succeed, failed, duration,
-                TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero, 
+                TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero,
                 0, 0, totalBytes);
         }
-        
-        
+
+
         var standardDeviation = msgTimings.Select(s => s.TotalMilliseconds).StandardDeviation();
 
         return new RunResults(
@@ -169,13 +169,17 @@ class MqttBenchmark
         );
     }
 
-    private ConcurrentBag<IMqttClient> BuildClients()
+    private async Task<ConcurrentBag<IMqttClient>> BuildClients(string test)
     {
         var mqttFactory = new MqttFactory();
 
-        return new ConcurrentBag<IMqttClient>(Enumerable.Range(0, _settings.Clients!.Value).Select(clientId =>
+        var clients = Enumerable.Range(0, _settings.Clients!.Value).Select(_ =>
+            mqttFactory.CreateMqttClient());
+
+        var clientsBag = new ConcurrentBag<IMqttClient>();
+
+        foreach (var client in clients)
         {
-            var mqttClient = mqttFactory.CreateMqttClient();
 
             var mqttClientOptions = new MqttClientOptionsBuilder()
                 .WithTcpServer(options =>
@@ -183,21 +187,23 @@ class MqttBenchmark
                     options.Server = _settings.Broker!.Host;
                     options.Port = _settings.Broker.Port;
                 })
-                .WithClientId($"{_settings.ClientPrefix}-{clientId}")
+                .WithClientId($"{_settings.ClientPrefix}-{test}")
                 .WithCleanSession(true)
                 .WithCommunicationTimeout(_settings.PublishTimeout!.Value)
                 .Build();
 
-            if (!TryConnect(mqttClient, mqttClientOptions))
+            if (await TryConnect(client, mqttClientOptions))
             {
-                return null;
+                clientsBag.Add(client);
             }
-            
-            return mqttClient;
-        }).Where(c => c != null).Cast<IMqttClient>());
+
+
+        }
+
+        return clientsBag;
     }
 
-    private bool TryConnect(IMqttClient mqttClient, IMqttClientOptions mqttClientOptions)
+    private async Task<bool> TryConnect(IMqttClient mqttClient, IMqttClientOptions mqttClientOptions)
     {
         int attempts = _settings?.ConnectAttempts ?? 5;
 
@@ -205,7 +211,7 @@ class MqttBenchmark
         {
             try
             {
-                var result = mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None).Result;
+                var result = await mqttClient.ConnectAsync(mqttClientOptions);
                 if (result.ResultCode == MqttClientConnectResultCode.Success)
                 {
                     return true;
@@ -217,9 +223,10 @@ class MqttBenchmark
             }
             finally
             {
+
                 attempts--;
             }
-            
+
             Thread.Sleep(1);
         }
 
