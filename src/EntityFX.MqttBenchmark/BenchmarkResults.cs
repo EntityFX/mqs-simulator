@@ -1,3 +1,5 @@
 namespace EntityFX.MqttBenchmark;
 
-record BenchmarkResults(string TestName, TotalResults TotalResults, RunResults[] RunResults, Settings Settings);
+record BenchmarkResults(
+    string TestName, int ClientsCount, TotalResults TotalResults, 
+    RunResults[] RunResults, Settings Settings);

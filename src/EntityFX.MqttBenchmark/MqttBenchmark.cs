@@ -22,6 +22,7 @@ class MqttBenchmark
     public async Task<BenchmarkResults> Run(string testName)
     {
         var clients = await BuildClients(testName);
+        var clientsCount = clients.Count();
 
         var testTimeSw = new Stopwatch();
         testTimeSw.Start();
@@ -29,7 +30,7 @@ class MqttBenchmark
         var clientTasks = new List<Task<RunResults>>();
         for (var i = 0; i < clients.Count; i++)
         {
-            if (clients.TryTake(out var client))
+            if (clients.TryPeek(out var client))
             {
                 clientTasks.Add(SendMessages(client));
             }
@@ -37,14 +38,12 @@ class MqttBenchmark
 
         var results = await Task.WhenAll(clientTasks);
 
-        var totalResults = CalculateTotalResults(results, clients, testTimeSw.Elapsed);
+        var totalResults = CalculateTotalResults(results, testTimeSw.Elapsed);
 
-        return new BenchmarkResults(testName, totalResults, results, _settings);
+        return new BenchmarkResults(testName, clientsCount, totalResults, results, _settings);
     }
 
-    private TotalResults CalculateTotalResults(IEnumerable<RunResults> runResults,
-        ConcurrentBag<IMqttClient> clients,
-        TimeSpan testTime)
+    private TotalResults CalculateTotalResults(IEnumerable<RunResults> runResults, TimeSpan testTime)
     {
         var runResultsArray = runResults.ToArray() ?? Array.Empty<RunResults>();
 
@@ -58,7 +57,6 @@ class MqttBenchmark
                 TimeSpan.Zero,
                 TimeSpan.Zero,
                 TimeSpan.Zero,
-                0,
                 0,
                 0,
                 0,
@@ -82,7 +80,6 @@ class MqttBenchmark
             (decimal)runResultsArray.Select(s => s.MessageTimeMean.TotalMilliseconds).StandardDeviation(),
             runResultsArray.Sum(r => r.MessagesPerSecond),
             runResultsArray.Average(r => r.MessagesPerSecond),
-            clients.Count,
             totalBytes);
     }
 
