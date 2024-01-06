@@ -1,14 +1,11 @@
-﻿using EntityFX.IotSimulator.Engine;
-using EntityFX.IotSimulator.Engine.TelemetryGenerator;
-using MQTTnet.Client.Options;
-using MQTTnet;
-using NBomber;
-using MQTTnet.Client;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reactive;
-using EntityFX.IotSimulator.Engine.Builder;
+using Microsoft.Extensions.Hosting;
+using MQTTnet;
+using MQTTnet.Client;
+using NBomber;
+
+namespace EntityFX.IotSimulator.Stress;
 
 static class ScenarioHelper
 {
@@ -28,8 +25,8 @@ static class ScenarioHelper
     }
 
     internal static async Task BuildMqttClientPool(
-        ClientPool<(IValueGenerator Generator, IMqttClient mqttClient, MqttScenarioSettings MqttScenarioSettings)> clientPool, 
-        BuilderFactory builderFactory, MqttScenarioSettings settings)
+        ClientPool<(IMqttClient mqttClient, MqttScenarioSettings MqttScenarioSettings)> clientPool, 
+        MqttScenarioSettings settings)
     {
         var mqttFactory = new MqttFactory();
 
@@ -42,9 +39,8 @@ static class ScenarioHelper
                 .Build();
 
             await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
-
-            var generator = builderFactory.GetGeneratorBuilder().Build();
-            clientPool.AddClient((generator, mqttClient, settings));
+            
+            clientPool.AddClient((mqttClient, settings));
         }
     }
 }

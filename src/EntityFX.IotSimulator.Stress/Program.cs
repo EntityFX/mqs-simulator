@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using EntityFX.IotSimulator.Stress;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,7 @@ var logger = host.Services.GetRequiredService<ILogger<MqttScenarioBuilder>>();
 
 InfluxDBSink influxDbSink = new();
 var scenario1 = new MqttScenarioBuilder(logger, configuration);
-var scenario2 = new MqttScenarioBuilder(logger, configuration);
+//var scenario2 = new MqttScenarioBuilder(logger, configuration);
 
 
 NBomberRunner
@@ -32,7 +33,7 @@ NBomberRunner
     .LoadInfraConfig("config.json")
     .LoadConfig("config.json")
     //.WithReportingInterval(TimeSpan.FromSeconds(5))
-    .WithReportingSinks(influxDbSink)
+    //.WithReportingSinks(influxDbSink)
     //.WithTestSuite("reporting")
     //.WithTestName("influx_db_demo")
 

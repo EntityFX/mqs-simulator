@@ -4,9 +4,8 @@ using System.Text.Json;
 using EntityFX.MqttBenchmark.Helpers;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Client.Connecting;
-using MQTTnet.Client.Options;
-using MQTTnet.Client.Publishing;
+using MQTTnet.Protocol;
+using TimeSpan = System.TimeSpan;
 
 namespace EntityFX.MqttBenchmark;
 
@@ -32,10 +31,10 @@ class MqttBenchmark
         {
             if (clients.TryPeek(out var client))
             {
-                clientTasks.Add(SendMessages(client));
+                clientTasks.Add(Task.Run(async () => await SendMessages(client)));
             }
         }
-
+        
         var results = await Task.WhenAll(clientTasks);
 
         var totalResults = CalculateTotalResults(results, testTimeSw.Elapsed);
@@ -83,65 +82,62 @@ class MqttBenchmark
             totalBytes);
     }
 
-    private Task<RunResults> SendMessages(IMqttClient mqttClient)
+    private async Task<RunResults> SendMessages(IMqttClient mqttClient)
     {
-        return Task.Run(async () =>
+        TimeSpan duration = TimeSpan.Zero;
+        var msgSw = new Stopwatch();
+
+        var msgTimings = new List<TimeSpan>();
+
+        msgSw.Start();
+
+        int succeed = 0;
+        int failed = 0;
+        int total = 0;
+        bool end = false;
+        int totalBytes = 0;
+
+        while (!end)
         {
-            TimeSpan duration = TimeSpan.Zero;
-            var msgSw = new Stopwatch();
+            var message = BuildMessage();
 
-            var msgTimings = new List<TimeSpan>();
+            msgSw.Restart();
 
-            msgSw.Start();
-
-            int succeed = 0;
-            int failed = 0;
-            int total = 0;
-            bool end = false;
-            int totalBytes = 0;
-
-            while (!end)
+            try
             {
-                var message = BuildMessage();
+                var reasonCode = (await mqttClient.PublishAsync(message)).ReasonCode;
 
-                msgSw.Restart();
-
-                try
+                if (reasonCode == MqttClientPublishReasonCode.Success)
                 {
-                    var publishResult = await mqttClient.PublishAsync(message, CancellationToken.None);
-
-                    if (publishResult.ReasonCode == MqttClientPublishReasonCode.Success)
-                    {
-                        succeed++;
-                        totalBytes += message.Payload.Length;
-                        msgTimings.Add(msgSw.Elapsed);
-                    }
-                    else
-                    {
-                        failed++;
-                    }
+                    succeed++;
+                    totalBytes += message.Payload.Length;
+                    msgTimings.Add(msgSw.Elapsed);
                 }
-                catch (Exception)
+                else
                 {
                     failed++;
                 }
-                finally
-                {
-                    duration += msgSw.Elapsed;
-                }
-
-                if ((_settings.MessageCount != null && total >= _settings.MessageCount - 1)
-                    || (_settings.TestMaxTime != null && duration >= _settings.TestMaxTime))
-                {
-                    end = true;
-                }
-
-                total++;
+            }
+            catch (Exception)
+            {
+                failed++;
+            }
+            finally
+            {
+                duration += msgSw.Elapsed;
             }
 
-            return GetResults(msgTimings, total,
-                mqttClient.Options.ClientId, duration, succeed, failed, totalBytes);
-        });
+            if ((_settings.MessageCount != null && total >= _settings.MessageCount - 1)
+                || (_settings.TestMaxTime != null && duration >= _settings.TestMaxTime))
+            {
+                end = true;
+            }
+
+            total++;
+        }
+
+        return GetResults(msgTimings, total,
+            mqttClient.Options.ClientId, duration, succeed, failed, totalBytes);
     }
 
     private RunResults GetResults(List<TimeSpan> msgTimings, int count,
@@ -177,7 +173,6 @@ class MqttBenchmark
 
         foreach (var client in clients)
         {
-
             var mqttClientOptions = new MqttClientOptionsBuilder()
                 .WithTcpServer(options =>
                 {
@@ -185,22 +180,20 @@ class MqttBenchmark
                     options.Port = _settings.Broker.Port;
                 })
                 .WithClientId($"{_settings.ClientPrefix}-{test}")
-                .WithCleanSession(true)
-                .WithCommunicationTimeout(_settings.PublishTimeout!.Value)
+                .WithCleanSession(false)
+                .WithTimeout(_settings.PublishTimeout!.Value)
                 .Build();
 
             if (await TryConnect(client, mqttClientOptions))
             {
                 clientsBag.Add(client);
             }
-
-
         }
 
         return clientsBag;
     }
 
-    private async Task<bool> TryConnect(IMqttClient mqttClient, IMqttClientOptions mqttClientOptions)
+    private async Task<bool> TryConnect(IMqttClient mqttClient, MqttClientOptions mqttClientOptions)
     {
         int attempts = _settings?.ConnectAttempts ?? 5;
 
@@ -220,7 +213,6 @@ class MqttBenchmark
             }
             finally
             {
-
                 attempts--;
             }
 
@@ -232,13 +224,14 @@ class MqttBenchmark
 
     private MqttApplicationMessage BuildMessage()
     {
-        var payload = !string.IsNullOrEmpty(_settings.Payload) ? _settings.Payload :
-            new string('a', _settings.MessageSize!.Value);
+        var payload = !string.IsNullOrEmpty(_settings.Payload)
+            ? _settings.Payload
+            : new string('a', _settings.MessageSize!.Value);
 
 
         var applicationMessage = new MqttApplicationMessageBuilder()
             .WithTopic(_settings.Topic)
-            .WithQualityOfServiceLevel(_settings.Qos ?? 1)
+            .WithQualityOfServiceLevel((MqttQualityOfServiceLevel)(_settings.Qos ?? 1))
             .WithPayload(payload)
             .Build();
 
